@@ -1,0 +1,30 @@
+require "domainatrix"
+require "fog"
+require "json"
+require "ipaddress"
+require "active_support/all"
+require "set"
+require "fileutils"
+
+require 'chef/exceptions'
+require 'chef/knife'
+require "knife-nitrous/version"
+
+module Knife
+  module Nitrous
+    ROOT = File.expand_path(File.dirname(__FILE__) + '/../')
+  end
+end
+
+require "categories/security_group+nitrous"
+require "mixins/aws"
+
+require "security_groups/security_rule"
+require "security_groups/security_group"
+
+require "block_devices/block_device"
+require "block_devices/block_device_collection"
+
+require "servers/server"
+require "servers/server_collection"
+
