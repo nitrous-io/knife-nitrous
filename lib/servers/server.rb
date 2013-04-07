@@ -35,7 +35,7 @@ module KnifeNitrous
     end
 
     def inspect
-      "#KnifeNitrous::Server #{self.hostname}: #{self.region}: #{self.size} | vars=> #{self.vars.inspect}"
+      "#KnifeNitrous::Server #{self.hostname}: #{self.region}: #{self.size} | attrs=> #{self.attributes.inspect}"
     end
 
     def provision

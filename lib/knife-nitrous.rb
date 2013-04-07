@@ -28,3 +28,5 @@ require "block_devices/block_device_collection"
 require "servers/server"
 require "servers/server_collection"
 
+require "chef/knife/nitrous_create"
+
