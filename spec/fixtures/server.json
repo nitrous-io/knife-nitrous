@@ -1,6 +1,7 @@
 {
+  "type": "root-www",
+
   "security_group": {
-    "name": "root-www",
     "rules": [
       "80 tcp 0.0.0.0/0",
       "443 tcp 0.0.0.0/0",
@@ -14,13 +15,19 @@
       "elb": true,
       "region": "us-east-1",
       "size": "m1.small",
-      "ami": "ami-deadbeef"
+      "ami": "ami-deadbeef",
+      "attributes" : {
+        "environment": "production"
+      }
     },
     {
       "hostname": "sensu-usw1.nitrous.io",
       "size": "m1.small",
       "region": "us-west-1",
       "ami": "ami-deadbeef",
+      "attributes" : {
+        "environment": "production"
+      },
       "block_devices": [
         {
           "name": "/dev/sdf",
@@ -37,10 +44,13 @@
       ]
     },
     {
-      "hostname": "sensu-usw2.nitrous.io",
+      "hostname": "sensu-staging.nitrous.io",
       "size": "m1.large",
       "region": "us-west-1",
       "ami": "ami-deadbeef",
+      "attributes" : {
+        "environment": "staging"
+      },
       "block_devices": [
         {
           "name": "/dev/sdf",

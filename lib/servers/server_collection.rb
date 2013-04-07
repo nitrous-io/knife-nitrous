@@ -2,10 +2,12 @@ module KnifeNitrous
   class ServerCollection
 
     attr_accessor :current_region, :environment
-    attr_reader   :regions, :security_group
+    attr_reader   :regions, :security_group, :type
 
-    def initialize(security_group_hash)
+    def initialize(type, security_group_hash)
       @servers, @regions = [], []
+
+      @type = type
       @security_group = KnifeNitrous::SecurityGroup.from_hash(security_group_hash)
     end
 
@@ -13,39 +15,12 @@ module KnifeNitrous
       @servers.push server
     end
 
-    def provision
+    def provision_security_group!
+      @regions = @servers.map(&:region).uniq.sort
       @regions.each { |r| @security_group.provision(r) }
-
-      @servers.select do |s|
-        @regions.include?(s.region)
-      end.each { |s| s.provision }
     end
 
-    def set_region(region)
-      all_regions = @servers.map(&:region).uniq.sort
-      region_is_set = false
-
-      if all_regions.count > 1
-        if region == 'all'
-          @regions = all_regions
-          region_is_set = true
-        else
-          unless all_regions.index(region).nil?
-            @regions.push region
-            region_is_set = true
-          end
-        end
-      else
-        @regions.push regions.first
-        region_is_set = true
-      end
-
-      return region_is_set
-    end
-
-    def find_by_hostname(hostname)
-      @servers.find { |s| s.hostname == hostname }
-    end
+    def each(&block); @servers.each { |s| yield(s) }; end
 
     def size; @servers.size; end
 
@@ -63,14 +38,17 @@ module KnifeNitrous
         return nil
       end
 
-      server_collection = self.new(parsed_json['security_group'])
+      server_collection = self.new(parsed_json['type'],
+                                   parsed_json['security_group'].merge!('name' => parsed_json['type']))
 
       parsed_json['servers'].each do |server_config|
         server = KnifeNitrous::Server.new(hostname: server_config['hostname'],
                                           size: server_config['size'],
                                           ami: server_config['ami'],
                                           region: server_config['region'],
-                                          elb: server_config['elb'] || false)
+                                          type: parsed_json['type'],
+                                          attributes: server_config['attributes'])
+
         server.block_devices = KnifeNitrous::BlockDeviceCollection.new(server_config['block_devices'])
 
         server_collection.add server

@@ -24,7 +24,7 @@ end
 describe KnifeNitrous::Server do
   let!(:server) do
     KnifeNitrous::Server.new(hostname: 'example.actionbox.io',
-                       role: 'example',
+                       type: 'example',
                        region: 'ap-southeast-1',
                        environment: 'development',
                        size: 'm1.small',
@@ -56,14 +56,14 @@ describe KnifeNitrous::Server do
 
         it "should set all the instance variables correctly and also set the AWS credentials as env vars" do
           @server = KnifeNitrous::Server.new(hostname: 'example.action.io',
-                                       role: 'example',
+                                       type: 'example',
                                        region: 'ap-southeast-1',
                                        environment: 'development',
                                        size: 'm1.small',
                                        ami: 'ami-deadbeef')
 
           @server.hostname.should == 'example.action.io'
-          @server.role.should == 'example'
+          @server.type.should == 'example'
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -82,14 +82,14 @@ describe KnifeNitrous::Server do
 
         it "should set all the instance variables correctly and also set the AWS credentials as env vars" do
           @server = KnifeNitrous::Server.new(hostname: 'example.action.io',
-                                       role: 'example',
+                                       type: 'example',
                                        region: 'ap-southeast-1',
                                        environment: 'development',
                                        size: 'm1.small',
                                        ami: 'ami-deadbeef')
 
           @server.hostname.should == 'example.action.io'
-          @server.role.should == 'example'
+          @server.type.should == 'example'
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -106,7 +106,7 @@ describe KnifeNitrous::Server do
     context "env variables are set" do
       it "should set all the instance variables correctly" do
         @server = KnifeNitrous::Server.new(hostname: 'example.action.io',
-                                     role: 'example',
+                                     type: 'example',
                                      region: 'ap-southeast-1',
                                      environment: 'development',
                                      size: 'm1.small',
@@ -114,7 +114,7 @@ describe KnifeNitrous::Server do
 
         @server.should_not_receive(:ask)
         @server.hostname.should == 'example.action.io'
-        @server.role.should == 'example'
+        @server.type.should == 'example'
         @server.region.should == 'ap-southeast-1'
         @server.environment.should == 'development'
         @server.size.should == 'm1.small'
@@ -201,7 +201,7 @@ describe KnifeNitrous::Server do
 
   describe "#provision" do
     before do
-      create_security_group_for(server.region, server.role)
+      create_security_group_for(server.region, server.type)
       create_keypair_for(server.region)
       @zone = create_dns_zone("actionbox.io")
     end
@@ -277,7 +277,7 @@ describe KnifeNitrous::Server do
 
           cloud_instance.tags[:Name].should == server.hostname
           cloud_instance.tags[:ip].should == new_ip.public_ip
-          cloud_instance.tags[:Purpose].should == server.role
+          cloud_instance.tags[:Purpose].should == server.type
           cloud_instance.public_ip_address.should == new_ip.public_ip
           cloud_instance.image_id.should == server.ami
           cloud_instance.flavor_id.should == server.size
@@ -304,7 +304,7 @@ describe KnifeNitrous::Server do
 
             cloud_instance.tags[:Name].should == server.hostname
             cloud_instance.tags[:ip].should == new_ip.public_ip
-            cloud_instance.tags[:Purpose].should == server.role
+            cloud_instance.tags[:Purpose].should == server.type
             cloud_instance.public_ip_address.should == new_ip.public_ip
             cloud_instance.image_id.should == server.ami
             cloud_instance.flavor_id.should == server.size
@@ -320,7 +320,7 @@ describe KnifeNitrous::Server do
 
             cloud_instance.tags[:Name].should == server.hostname
             cloud_instance.tags[:ip].should == @elastic_ip.public_ip
-            cloud_instance.tags[:Purpose].should == server.role
+            cloud_instance.tags[:Purpose].should == server.type
             cloud_instance.public_ip_address.should == @elastic_ip.public_ip
             cloud_instance.image_id.should == server.ami
             cloud_instance.flavor_id.should == server.size
@@ -339,7 +339,7 @@ describe KnifeNitrous::Server do
     let(:cloud_instance) { server.cloud_instance }
 
     before do
-      create_security_group_for(server.region, server.role)
+      create_security_group_for(server.region, server.type)
       create_keypair_for(server.region)
       create_dns_zone("actionbox.io")
       create_server(server)

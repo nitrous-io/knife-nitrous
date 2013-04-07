@@ -2,12 +2,13 @@ module KnifeNitrous
   class Server
     include KnifeNitrous::AWS
 
-    attr_accessor :hostname, :role, :region, :environment,
-                  :size, :ami, :block_devices, :vars, :elb
+    attr_accessor :hostname, :type, :region, :environment,
+                  :size, :ami, :block_devices, :attributes
 
     attr_reader   :ssh_port, :ip
 
     SSH_PORT = 65100
+    SSH_USER = 'ubuntu'.freeze
 
     def initialize(opts = {})
       load_credentials!
@@ -67,6 +68,7 @@ module KnifeNitrous
       cloud_instance.wait_for { print "."; ready? }
       reassign_ip!
     end
+
 
     protected
     def valid_flavor?(flavor_id)
@@ -145,11 +147,11 @@ module KnifeNitrous
         flavor_id: self.size,
         key_name: "#{self.region}-keypair",
         availability_zone: "#{self.region}a",
-        groups: ["#{self.role}"],
+        groups: ["#{self.type}"],
         tags: {
           ip: self.ip,
           Name: self.hostname,
-          Purpose: self.role
+          Purpose: self.type
         }
       }
 

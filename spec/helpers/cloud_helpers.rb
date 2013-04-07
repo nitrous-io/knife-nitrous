@@ -9,11 +9,11 @@ module CloudHelpers
       flavor_id: server.size,
       key_name: "#{server.region}-keypair",
       availability_zone: "#{server.region}a",
-      groups: ["#{server.role}"],
+      groups: ["#{server.type}"],
       tags: {
         'ip'      => server.ip,
         'Name'    => server.hostname,
-        'Purpose' =>  server.role
+        'Purpose' =>  server.type
       }
     }
 
@@ -33,8 +33,8 @@ module CloudHelpers
     compute(region).key_pairs.create(name: keypair_name) unless compute(region).key_pairs.get(keypair_name)
   end
 
-  def create_security_group_for(region, role)
-    compute(region).security_groups.create(name: role, description: role)
+  def create_security_group_for(region, type)
+    compute(region).security_groups.create(name: type, description: type)
   end
 
   def compute(region)
