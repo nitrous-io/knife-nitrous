@@ -18,15 +18,12 @@ module KnifeNitrous
     def load_credentials!
       if File.exists?(CREDENTIALS_FILE)
         credentials = YAML.load(File.read(CREDENTIALS_FILE))
-        ENV['AWS_ACCESS_KEY_ID'] = credentials[:access_key]
-        ENV['AWS_SECRET_ACCESS_KEY'] = credentials[:secret_key]
+        ENV['AWS_ACCESS_KEY_ID'] = credentials['access_key']
+        ENV['AWS_SECRET_ACCESS_KEY'] = credentials['secret_key']
       else
-        aws_access_key_id, aws_secret_access_key = nil, nil
-
-        aws_access_key_id = ask "AWS Access Key ID: " while aws_access_key_id.nil?
-        aws_secret_access_key = ask "AWS Secret Access Key: " while aws_secret_access_key.nil?
-
-        set_credentials!(aws_access_key_id, aws_secret_access_key)
+        raise "Make sure you have ~/.chef/aws.json with two keys: " +
+              "access_key with the value AWS Access Key ID, " +
+              "secret_key with the value AWS Secret Access Key"
       end
     end
 
