@@ -2,13 +2,13 @@ require 'spec_helper'
 
 shared_context "mock ip" do
   before do
-    @zone = create_dns_zone("actionbox.io")
+    @zone = create_dns_zone("n2oapp.com")
     @elastic_ip = compute(server.region).addresses.create
     @main_record = @zone.records.create(value: ["ec2-#{@elastic_ip.public_ip.gsub(/\./, '-')}.ap-southeast-1.compute.amazonaws.com"],
-                                        name: 'example.actionbox.io',
+                                        name: 'example.n2oapp.com',
                                         type: 'CNAME')
     @wildcard_record = @zone.records.create(value: ["ec2-#{@elastic_ip.public_ip.gsub(/\./, '-')}.ap-southeast-1.compute.amazonaws.com"],
-                                            name: '*.example.actionbox.io',
+                                            name: '*.example.n2oapp.com',
                                             type: 'CNAME')
 
     Fog::DNS::AWS::Records.any_instance.stub(:get).and_return(@main_record, @wildcard_record)
@@ -23,7 +23,7 @@ end
 
 describe KnifeNitrous::Server do
   let!(:server) do
-    KnifeNitrous::Server.new(hostname: 'example.actionbox.io',
+    KnifeNitrous::Server.new(hostname: 'example.n2oapp.com',
                        type: 'example',
                        region: 'ap-southeast-1',
                        environment: 'development',
@@ -203,7 +203,7 @@ describe KnifeNitrous::Server do
     before do
       create_security_group_for(server.region, server.type)
       create_keypair_for(server.region)
-      @zone = create_dns_zone("actionbox.io")
+      @zone = create_dns_zone("n2oapp.com")
     end
 
     context "server already exists and is not terminated" do
@@ -341,7 +341,7 @@ describe KnifeNitrous::Server do
     before do
       create_security_group_for(server.region, server.type)
       create_keypair_for(server.region)
-      create_dns_zone("actionbox.io")
+      create_dns_zone("n2oapp.com")
       create_server(server)
       cloud_instance.stub(:wait_for)
       server.stub(:tcp_test_ssh).and_return(true)

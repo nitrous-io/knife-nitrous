@@ -111,9 +111,9 @@ module KnifeNitrous
         if (record = zone.records.get(self.hostname))
           change_dns_value(record, domain_name)
 
-          # If this is an actionbox.io URL, then update the DNS value there
+          # If this is an n2oapp.com URL, then update the DNS value there
           # as well
-          if self.hostname =~ /actionbox\.io/
+          if self.hostname =~ /n2oapp\.com/
             if (record = zone.records.get("*.#{self.hostname}"))
               change_dns_value(record, domain_name)
             end
@@ -126,7 +126,7 @@ module KnifeNitrous
 
           # Box Hosts need wildcard domain too because we allow
           # users to access individual boxes
-          if self.hostname =~ /actionbox\.io$/
+          if self.hostname =~ /n2oapp\.com$/
             zone.records.create(value: domain_name,
                                 name: "*.#{self.hostname}",
                                 type: 'CNAME',
