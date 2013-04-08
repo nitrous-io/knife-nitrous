@@ -12,7 +12,7 @@ Clone the repository:
 Build and install the gem:
 
     `$ bundle exec rake build`
-    `$ gem install pkg/knife_nitrous-x.y.z.gem`
+    `$ gem install pkg/knife-nitrous-x.y.z.gem`
 
 Replace with whatever is the version specified in
 `knife-nitrous/version.rb`

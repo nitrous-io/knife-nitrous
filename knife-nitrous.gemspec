@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'knife-nitrous/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "knife_nitrous"
+  gem.name          = "knife-nitrous"
   gem.version       = KnifeNitrous::VERSION
   gem.authors       = ["Arun Thampi"]
   gem.email         = ["arun@nitrous.io"]
