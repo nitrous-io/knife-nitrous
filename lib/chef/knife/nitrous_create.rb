@@ -2,11 +2,18 @@ module KnifeNitrous
   class NitrousCreate < Chef::Knife
 
     deps do
+      require 'active_support/all'
       require 'chef/json_compat'
       require 'chef/knife/bootstrap'
+      require 'ipaddress'
+      require 'domainatrix'
+      require 'fog'
       require 'mixins/aws'
+      require 'categories/security_group+nitrous'
       require 'security_groups/security_rule'
       require 'security_groups/security_group'
+      require 'block_devices/block_device'
+      require 'block_devices/block_device_collection'
       require 'servers/server'
       require 'servers/server_collection'
 
