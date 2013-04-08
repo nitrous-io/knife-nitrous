@@ -30,7 +30,10 @@ module KnifeNitrous
       server_collection.provision_security_group!
 
       server_collection.each do |s|
-        s.provision && self.bootstrap_chef_for_node(s)
+        if s.cloud_state == 'terminated'
+          s.provision
+          self.bootstrap_chef_for_node(s)
+        end
       end
     end
 
