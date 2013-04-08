@@ -66,7 +66,7 @@ describe KnifeNitrous::NitrousCreate do
       @bootstrap.config[:ssh_user].should == KnifeNitrous::Server::SSH_USER
       @bootstrap.config[:ssh_port].should == KnifeNitrous::Server::SSH_PORT
       @bootstrap.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
-      @bootstrap.config[:run_list].should == "recipe[#{@server.type}]"
+      @bootstrap.config[:run_list].should == "recipe[#{@server.type}-cookbook]"
 
       @bootstrap.config[:chef_node_name].should == @server.hostname
       @bootstrap.config[:first_boot_attributes].should == @server.attributes
