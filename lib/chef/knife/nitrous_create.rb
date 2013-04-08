@@ -4,6 +4,12 @@ module KnifeNitrous
     deps do
       require 'chef/json_compat'
       require 'chef/knife/bootstrap'
+      require 'mixins/aws'
+      require 'security_groups/security_rule'
+      require 'security_groups/security_group'
+      require 'servers/server'
+      require 'servers/server_collection'
+
       Chef::Knife::Bootstrap.load_deps
     end
 
