@@ -29,4 +29,5 @@ require "servers/server"
 require "servers/server_collection"
 
 require "chef/knife/nitrous_create"
+require "chef/knife/nitrous_provision"
 
