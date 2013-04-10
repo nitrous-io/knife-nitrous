@@ -27,8 +27,11 @@ describe KnifeNitrous::NitrousCreate do
   end
 
   describe "#run" do
+    let!(:bootstrap) { double :bootstrap }
+
     before do
-      @knife_nitrous_create.stub!(:bootstrap_chef_for_node) { true }
+      bootstrap.stub!(:run)
+      @knife_nitrous_create.stub!(:bootstrap_chef_for_node) { bootstrap }
     end
 
     it "should parse the config file" do
@@ -50,8 +53,14 @@ describe KnifeNitrous::NitrousCreate do
 
     it "should bootstrap chef on each of the servers in the server collection" do
       @knife_nitrous_create.should_receive(:bootstrap_chef_for_node).
-                            exactly(3).times
+                            exactly(3).times.
+                            and_return(bootstrap)
 
+      @knife_nitrous_create.run
+    end
+
+    it "should run bootstrap on each of the servers in the server collection" do
+      bootstrap.should_receive(:run).exactly(3).times
       @knife_nitrous_create.run
     end
   end
@@ -62,18 +71,39 @@ describe KnifeNitrous::NitrousCreate do
       @bootstrap = @knife_nitrous_create.bootstrap_chef_for_node(@server)
     end
 
-    it "should set the ssh_user to ubuntu" do
+    it "should set the ssh_user to the default nitrous user" do
       @bootstrap.config[:ssh_user].should == KnifeNitrous::Server::SSH_USER
+    end
+
+    it "should set the ssh_port to the default nitrous ssh port" do
       @bootstrap.config[:ssh_port].should == KnifeNitrous::Server::SSH_PORT
+    end
+
+    it "should set the identify_file to be the default key which includes the region" do
       @bootstrap.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+    end
+
+    it "should set the run list to be the server's type" do
       @bootstrap.config[:run_list].should == "recipe[#{@server.type}-cookbook]"
+    end
 
+    it "should set the chef node name to be the server's hostname" do
       @bootstrap.config[:chef_node_name].should == @server.hostname
+    end
+
+    it "should set first_boot_attributes to be the server's attributes" do
       @bootstrap.config[:first_boot_attributes].should == @server.attributes
+    end
 
+    it "should set the distro to be chef-full" do
       @bootstrap.config[:distro].should == 'chef-full'
-      @bootstrap.config[:use_sudo].should be_true
+    end
 
+    it "should use sudo by default" do
+      @bootstrap.config[:use_sudo].should be_true
+    end
+
+    it "should set ec2 to be true" do
       Chef::Config[:knife][:hints]["ec2"].should_not be_nil
     end
   end

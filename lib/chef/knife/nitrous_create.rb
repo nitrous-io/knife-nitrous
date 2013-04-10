@@ -20,7 +20,7 @@ module KnifeNitrous
       Chef::Knife::Bootstrap.load_deps
     end
 
-    banner    'knife nitrous create (options)'
+    banner    'knife nitrous create'
     category  'nitrous'
 
     attr_reader :name, :server_collection
@@ -32,7 +32,7 @@ module KnifeNitrous
       server_collection.each do |s|
         if s.cloud_state == 'terminated'
           s.provision
-          self.bootstrap_chef_for_node(s)
+          self.bootstrap_chef_for_node(s).run
         end
       end
     end
