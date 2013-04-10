@@ -63,7 +63,7 @@ module CloudHelpers
     FileUtils.mkdir_p(File.dirname(KnifeNitrous::AWS::CREDENTIALS_FILE))
 
     File.open(KnifeNitrous::AWS::CREDENTIALS_FILE, 'w') do |f|
-      f.puts(YAML.dump(access_key: 'aws_access_key_id', secret_key: 'aws_secret_access_key'))
+      f.puts(JSON.dump(access_key: 'aws_access_key_id', secret_key: 'aws_secret_access_key'))
     end
   end
 
