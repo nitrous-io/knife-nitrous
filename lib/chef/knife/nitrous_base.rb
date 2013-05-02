@@ -31,8 +31,7 @@ class Chef
       def bootstrap_chef_for_node(server)
         bootstrap = Chef::Knife::Bootstrap.new
         bootstrap.name_args = [server.hostname]
-        # run_list will assume that that the cookbook is "#{type}-cookbook"
-        bootstrap.config[:run_list] = "recipe[#{server.type}-cookbook]"
+        bootstrap.config[:run_list] = "recipe[#{server.cookbook}]"
         bootstrap.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         bootstrap.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
         bootstrap.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"

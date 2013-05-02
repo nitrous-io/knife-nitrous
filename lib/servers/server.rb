@@ -3,7 +3,8 @@ module KnifeNitrous
     include KnifeNitrous::AWS
 
     attr_accessor :hostname, :type, :region, :environment,
-                  :size, :ami, :block_devices, :attributes
+                  :size, :ami, :block_devices, :attributes,
+                  :cookbook
 
     attr_reader   :ssh_port, :ip
 
@@ -14,6 +15,8 @@ module KnifeNitrous
       load_credentials!
 
       opts.each { |k,v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
+
+      @cookbook = "#{@type}-cookbook" if @cookbook.nil?
       @ssh_port = SSH_PORT
       @cloud_instance = nil
     end

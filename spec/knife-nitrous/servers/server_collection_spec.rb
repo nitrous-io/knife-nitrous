@@ -58,6 +58,7 @@ describe KnifeNitrous::ServerCollection do
           servers[0].size.should == 'm1.small'
           servers[0].region.should == 'us-east-1'
           servers[0].type.should == 'root-www'
+          servers[0].cookbook.should == 'root-www_cookbook'
           servers[0].ami.should == 'ami-deadbeef'
           servers[0].attributes.should == { 'environment' => 'production' }
 
@@ -67,6 +68,7 @@ describe KnifeNitrous::ServerCollection do
           servers[1].size.should == 'm1.small'
           servers[1].region.should == 'us-west-1'
           servers[1].type.should == 'root-www'
+          servers[1].cookbook.should == 'root-www_cookbook'
           servers[1].ami.should == 'ami-deadbeef'
           servers[1].attributes.should == { 'environment' => 'production' }
 
@@ -86,6 +88,7 @@ describe KnifeNitrous::ServerCollection do
           servers[2].hostname.should == 'sensu-staging.nitrous.io'
           servers[2].size.should == 'm1.large'
           servers[2].type.should == 'root-www'
+          servers[2].cookbook.should == 'root-www_cookbook'
           servers[2].region.should == 'us-west-1'
           servers[2].ami.should == 'ami-deadbeef'
           servers[2].attributes.should == { 'environment' => 'staging' }

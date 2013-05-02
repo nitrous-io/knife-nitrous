@@ -47,7 +47,8 @@ module KnifeNitrous
                                           ami: server_config['ami'],
                                           region: server_config['region'],
                                           type: parsed_json['type'],
-                                          attributes: server_config['attributes'])
+                                          attributes: server_config['attributes'],
+                                          cookbook: parsed_json['cookbook'])
 
         server.block_devices = KnifeNitrous::BlockDeviceCollection.new(server_config['block_devices'])
 

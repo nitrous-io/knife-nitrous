@@ -24,11 +24,12 @@ end
 describe KnifeNitrous::Server do
   let!(:server) do
     KnifeNitrous::Server.new(hostname: 'example.n2oapp.com',
-                       type: 'example',
-                       region: 'ap-southeast-1',
-                       environment: 'development',
-                       size: 'm1.small',
-                       ami: 'ami-deadbeef')
+                             type: 'example',
+                             region: 'ap-southeast-1',
+                             environment: 'development',
+                             size: 'm1.small',
+                             ami: 'ami-deadbeef',
+                             cookbook: 'example_cookbook')
   end
 
   before :all do
@@ -56,14 +57,17 @@ describe KnifeNitrous::Server do
 
         it "should set all the instance variables correctly and also set the AWS credentials as env vars" do
           @server = KnifeNitrous::Server.new(hostname: 'example.action.io',
-                                       type: 'example',
-                                       region: 'ap-southeast-1',
-                                       environment: 'development',
-                                       size: 'm1.small',
-                                       ami: 'ami-deadbeef')
+                                             type: 'example',
+                                             region: 'ap-southeast-1',
+                                             environment: 'development',
+                                             size: 'm1.small',
+                                             ami: 'ami-deadbeef')
 
           @server.hostname.should == 'example.action.io'
           @server.type.should == 'example'
+          # If the cookbook isn't set then it should be set to
+          # #{type}-cookbook
+          @server.cookbook.should == 'example-cookbook'
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -82,14 +86,16 @@ describe KnifeNitrous::Server do
 
         it "should set all the instance variables correctly and also set the AWS credentials as env vars" do
           @server = KnifeNitrous::Server.new(hostname: 'example.action.io',
-                                       type: 'example',
-                                       region: 'ap-southeast-1',
-                                       environment: 'development',
-                                       size: 'm1.small',
-                                       ami: 'ami-deadbeef')
+                                             type: 'example',
+                                             region: 'ap-southeast-1',
+                                             environment: 'development',
+                                             size: 'm1.small',
+                                             ami: 'ami-deadbeef',
+                                             cookbook: 'example_cookbook')
 
           @server.hostname.should == 'example.action.io'
           @server.type.should == 'example'
+          @server.cookbook.should == 'example_cookbook'
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -106,15 +112,16 @@ describe KnifeNitrous::Server do
     context "env variables are set" do
       it "should set all the instance variables correctly" do
         @server = KnifeNitrous::Server.new(hostname: 'example.action.io',
-                                     type: 'example',
-                                     region: 'ap-southeast-1',
-                                     environment: 'development',
-                                     size: 'm1.small',
-                                     ami: 'ami-deadbeef')
+                                           type: 'example',
+                                           region: 'ap-southeast-1',
+                                           environment: 'development',
+                                           size: 'm1.small',
+                                           ami: 'ami-deadbeef')
 
         @server.should_not_receive(:ask)
         @server.hostname.should == 'example.action.io'
         @server.type.should == 'example'
+        @server.cookbook.should == 'example-cookbook'
         @server.region.should == 'ap-southeast-1'
         @server.environment.should == 'development'
         @server.size.should == 'm1.small'

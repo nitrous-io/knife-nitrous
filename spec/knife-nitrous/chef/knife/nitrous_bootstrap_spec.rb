@@ -155,7 +155,7 @@ describe KnifeNitrous::NitrousBootstrap do
     end
 
     it "should set the run list to be the server's type" do
-      @bootstrap.config[:run_list].should == "recipe[#{@server.type}-cookbook]"
+      @bootstrap.config[:run_list].should == "recipe[#{@server.cookbook}]"
     end
 
     it "should set the chef node name to be the server's hostname" do

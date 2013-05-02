@@ -1,5 +1,6 @@
 {
   "type": "root-www",
+  "cookbook": "root-www_cookbook",
 
   "security_group": {
     "rules": [
