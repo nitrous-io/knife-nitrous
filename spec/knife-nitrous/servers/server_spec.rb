@@ -231,7 +231,7 @@ describe KnifeNitrous::Server do
           let(:cloud_instance) { server.cloud_instance }
 
           before do
-            cloud_instance.connection.stub(:modify_instance_attribute)
+            cloud_instance.service.stub(:modify_instance_attribute)
             server.stub(:tcp_test_ssh).and_return(true)
             cloud_instance.stub(:wait_for)
             server.size = "m1.medium"
@@ -239,7 +239,7 @@ describe KnifeNitrous::Server do
 
           it 'changes size of the instance' do
             cloud_instance.should_receive(:stop)
-            cloud_instance.connection.should_receive(:modify_instance_attribute).
+            cloud_instance.service.should_receive(:modify_instance_attribute).
               with(cloud_instance.id, hash_including({ 'InstanceType.Value' => 'm1.medium' }))
             cloud_instance.should_receive(:start)
             server.provision
@@ -247,7 +247,7 @@ describe KnifeNitrous::Server do
 
           it 'does not modify the instance when the new size is invalid' do
             server.size = 'm1.invalid-size'
-            cloud_instance.connection.should_not_receive(:modify_instance_attribute)
+            cloud_instance.service.should_not_receive(:modify_instance_attribute)
             server.provision
           end
 
@@ -355,14 +355,14 @@ describe KnifeNitrous::Server do
 
     context 'when flavor_id is specified' do
       it 'changes size of the instance' do
-        cloud_instance.connection.should_receive(:modify_instance_attribute).
+        cloud_instance.service.should_receive(:modify_instance_attribute).
           with(cloud_instance.id, hash_including({ 'InstanceType.Value' => 'm1.medium' }))
         server.restart 'm1.medium'
       end
 
       context 'when the flavor_id is invalid' do
         it 'does not modify the instance' do
-          cloud_instance.connection.should_not_receive(:modify_instance_attribute)
+          cloud_instance.service.should_not_receive(:modify_instance_attribute)
           server.restart 'invalid.flavor'
         end
       end

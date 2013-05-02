@@ -60,7 +60,7 @@ module KnifeNitrous
       cloud_instance.wait_for { print "."; state == 'stopped' }
       if flavor_id && valid_flavor?(flavor_id)
         cloud_instance.flavor_id = flavor_id
-        cloud_instance.connection.modify_instance_attribute cloud_instance.id, {
+        cloud_instance.service.modify_instance_attribute cloud_instance.id, {
           'InstanceType.Value' => flavor_id
         }
       end
@@ -72,7 +72,7 @@ module KnifeNitrous
 
     protected
     def valid_flavor?(flavor_id)
-      cloud_instance.connection.flavors.all.any? { |flavor| flavor.id == flavor_id }
+      cloud_instance.service.flavors.all.any? { |flavor| flavor.id == flavor_id }
     end
 
     def reassign_ip!
