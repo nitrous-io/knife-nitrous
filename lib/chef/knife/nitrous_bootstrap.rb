@@ -3,7 +3,7 @@ module KnifeNitrous
 
     include Chef::Knife::NitrousBase
 
-    banner    'knife nitrous provision (options)'
+    banner    'knife nitrous bootstrap (options)'
     category  'nitrous'
 
     option :region,
