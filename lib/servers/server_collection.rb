@@ -35,6 +35,7 @@ module KnifeNitrous
       begin
         parsed_json = JSON.parse(File.read(config_file))
       rescue JSON::ParserError
+        p "Failed to parse nitrous.json config file"
         return nil
       end
 
