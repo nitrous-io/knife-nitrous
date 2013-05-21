@@ -33,7 +33,11 @@ module KnifeNitrous
       end
 
       servers_to_provision.each do |s|
-        chef_runner_for_node(s).run if s.cloud_state == 'running'
+        timestamp = Time.now.to_i
+        if s.cloud_state == 'running'
+          chef_attributes_loader_for_node(s, timestamp).run
+          chef_runner_for_node(s, timestamp).run
+        end
       end
     end
   end

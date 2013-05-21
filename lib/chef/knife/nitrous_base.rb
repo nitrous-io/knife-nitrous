@@ -49,11 +49,13 @@ class Chef
         bootstrap
       end
 
-      def chef_runner_for_node(server)
+      def chef_runner_for_node(server, timestamp)
         ssh = Chef::Knife::Ssh.new
         ssh.ui = ui
 
-        ssh.name_args = [ server.hostname, "sudo chef-client -c /etc/chef/client.rb" ]
+        att_file_name = attributes_file_name(server.type, timestamp)
+
+        ssh.name_args = [ server.hostname, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
         ssh.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"
@@ -61,6 +63,30 @@ class Chef
         ssh.config[:on_error] = :raise
 
         ssh
+      end
+
+      def chef_attributes_loader_for_node(server, timestamp)
+        ssh = Chef::Knife::Ssh.new
+        ssh.ui = ui
+
+        att_file_name = attributes_file_name(server.type, timestamp)
+        json_attributes = server.attributes
+
+        command = "sudo /opt/chef/embedded/bin/ruby -e \"require 'json'; File.open('#{att_file_name}', 'w') { |f| f.puts('#{json_attributes.to_json.gsub(/"/, '\\"')}') }\""
+
+        ssh.name_args = [ server.hostname, command ]
+        ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
+        ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
+        ssh.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"
+        ssh.config[:manual] = true
+        ssh.config[:on_error] = :raise
+
+        ssh
+      end
+
+      protected
+      def attributes_file_name(name, timestamp)
+        File.join("/", "tmp", "#{name}-#{timestamp}.json")
       end
     end
   end
