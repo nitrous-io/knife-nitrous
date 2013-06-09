@@ -72,6 +72,28 @@ module KnifeNitrous
       reassign_ip!
     end
 
+    # Setup EBS volumes for the current server. This doesnt resize existing
+    # volumes, only tried to setup new volumes with correct size by comparing
+    # the attached volumes with block_devices specified in config
+    def setup_volumes
+      current_devices = cloud_instance.volumes.all.map(&:device)
+
+      new_volumes = block_devices.to_a.select do |block|
+        !current_devices.include? block.name
+      end
+
+      new_volumes.each do |block|
+        volume = cloud_instance.volumes.new(
+                                             device: block.name,
+                                             size: block.size,
+                                             snapshot_id: block.snapshot_id,
+                                             delete_on_termination: block.delete_on_termination,
+                                             availability_zone: cloud_instance.availability_zone
+                                           )
+        volume.server = cloud_instance
+        volume.save
+      end
+    end
 
     protected
     def valid_flavor?(flavor_id)

@@ -11,6 +11,7 @@
   },
 
   "servers": [
+
     {
       "hostname": "nitrous.io",
       "elb": true,
@@ -21,6 +22,7 @@
         "environment": "production"
       }
     },
+
     {
       "hostname": "sensu-usw1.nitrous.io",
       "size": "m1.small",
@@ -44,6 +46,7 @@
         }
       ]
     },
+
     {
       "hostname": "sensu-staging.nitrous.io",
       "size": "m1.large",
@@ -61,5 +64,6 @@
         }
       ]
     }
+
   ]
 }

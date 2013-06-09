@@ -34,6 +34,10 @@ describe KnifeNitrous::NitrousProvision do
         @server_collection.to_a[1].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
 
+        @server_collection.to_a[0].stub!(:setup_volumes) { true }
+        @server_collection.to_a[1].stub!(:setup_volumes) { true }
+        @server_collection.to_a[2].stub!(:setup_volumes) { true }
+
         @knife_nitrous_provision.stub!(:chef_runner_for_node) { chef_runner }
         @knife_nitrous_provision.stub!(:chef_attributes_loader_for_node) { chef_attributes_loader }
 
@@ -43,6 +47,12 @@ describe KnifeNitrous::NitrousProvision do
 
       it "should parse the config file" do
         KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_provision.run
+      end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a.each { |s| s.should_receive(:setup_volumes).and_return(true) }
+
         @knife_nitrous_provision.run
       end
 
@@ -75,6 +85,9 @@ describe KnifeNitrous::NitrousProvision do
         @server_collection.to_a[1].stub!(:cloud_state) { 'stopped' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
 
+        @server_collection.to_a[0].stub!(:setup_volumes) { true }
+        @server_collection.to_a[2].stub!(:setup_volumes) { true }
+
         @knife_nitrous_provision.stub!(:chef_runner_for_node) { chef_runner }
         @knife_nitrous_provision.stub!(:chef_attributes_loader_for_node) { chef_attributes_loader }
 
@@ -84,6 +97,13 @@ describe KnifeNitrous::NitrousProvision do
 
       it "should parse the config file" do
         KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_provision.run
+      end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a[0].should_receive(:setup_volumes).and_return(true)
+        @server_collection.to_a[2].should_receive(:setup_volumes).and_return(true)
+
         @knife_nitrous_provision.run
       end
 
@@ -116,6 +136,8 @@ describe KnifeNitrous::NitrousProvision do
         @server_collection.to_a[1].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
 
+        @server_collection.to_a[0].stub!(:setup_volumes) { true }
+
         @knife_nitrous_provision.config[:region] = ['us-east-1']
         @knife_nitrous_provision.stub!(:chef_runner_for_node)             { chef_runner }
         @knife_nitrous_provision.stub!(:chef_attributes_loader_for_node)  { chef_attributes_loader }
@@ -126,6 +148,12 @@ describe KnifeNitrous::NitrousProvision do
 
       it "should parse the config file" do
         KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_provision.run
+      end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a[0].should_receive(:setup_volumes).and_return(true)
+
         @knife_nitrous_provision.run
       end
 
@@ -158,6 +186,8 @@ describe KnifeNitrous::NitrousProvision do
         @server_collection.to_a[1].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
 
+        @server_collection.to_a[2].stub!(:setup_volumes) { true }
+
         @knife_nitrous_provision.config[:hostname] = 'sensu-staging.nitrous.io'
         @knife_nitrous_provision.stub!(:chef_runner_for_node)             { chef_runner }
         @knife_nitrous_provision.stub!(:chef_attributes_loader_for_node)  { chef_attributes_loader }
@@ -168,6 +198,12 @@ describe KnifeNitrous::NitrousProvision do
 
       it "should parse the config file" do
         KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_provision.run
+      end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a[2].should_receive(:setup_volumes).and_return(true)
+
         @knife_nitrous_provision.run
       end
 

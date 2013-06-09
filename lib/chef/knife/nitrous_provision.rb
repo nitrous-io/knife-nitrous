@@ -34,7 +34,10 @@ module KnifeNitrous
 
       servers_to_provision.each do |s|
         timestamp = Time.now.to_i
+
         if s.cloud_state == 'running'
+          s.setup_volumes
+
           chef_attributes_loader_for_node(s, timestamp).run
           chef_runner_for_node(s, timestamp).run
         end
