@@ -18,6 +18,7 @@
       "region": "us-east-1",
       "size": "m1.small",
       "ami": "ami-deadbeef",
+      "availability_zone": "us-east-1c",
       "attributes" : {
         "environment": "production"
       }

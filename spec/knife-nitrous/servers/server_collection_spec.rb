@@ -57,6 +57,7 @@ describe KnifeNitrous::ServerCollection do
           servers[0].hostname.should == 'nitrous.io'
           servers[0].size.should == 'm1.small'
           servers[0].region.should == 'us-east-1'
+          servers[0].availability_zone.should == 'us-east-1c'
           servers[0].type.should == 'root-www'
           servers[0].cookbook.should == 'root-www_cookbook'
           servers[0].ami.should == 'ami-deadbeef'

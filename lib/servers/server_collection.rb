@@ -48,7 +48,8 @@ module KnifeNitrous
                                           region: server_config['region'],
                                           type: parsed_json['type'],
                                           attributes: server_config['attributes'],
-                                          cookbook: parsed_json['cookbook'])
+                                          cookbook: parsed_json['cookbook'],
+                                          availability_zone: server_config['availability_zone'])
 
         server.block_devices = KnifeNitrous::BlockDeviceCollection.new(server_config['block_devices'])
 
