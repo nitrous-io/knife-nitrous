@@ -30,7 +30,7 @@ class Chef
 
       def bootstrap_chef_for_node(server)
         bootstrap = Chef::Knife::Bootstrap.new
-        bootstrap.name_args = [server.hostname]
+        bootstrap.name_args = [server.aws_dns_name]
         bootstrap.config[:run_list] = "recipe[#{server.cookbook}]"
         bootstrap.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         bootstrap.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
@@ -55,7 +55,7 @@ class Chef
 
         att_file_name = attributes_file_name(server.type, timestamp)
 
-        ssh.name_args = [ server.hostname, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
+        ssh.name_args = [ server.aws_dns_name, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
         ssh.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"

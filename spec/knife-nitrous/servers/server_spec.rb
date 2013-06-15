@@ -162,6 +162,34 @@ describe KnifeNitrous::Server do
         server.cloud_instance.should be_nil
       end
     end
+
+    context "when provisioned (but destroyed) but include_all option is passed" do
+      before do
+        @existing_cloud_server = create_server(server)
+        # After calling #destroy, the state will be 'shutting-down'
+        @existing_cloud_server.destroy
+      end
+
+      it "should be a Fog::Compute::AWS::Server instance" do
+        cloud_instance = server.cloud_instance(include_all: true)
+
+        cloud_instance.class.should == Fog::Compute::AWS::Server
+        cloud_instance.image_id.should == 'ami-deadbeef'
+        cloud_instance.flavor_id.should == 'm1.small'
+      end
+    end
+  end
+
+  describe "#aws_dns_name" do
+    context "when provisioned" do
+      before do
+        @existing_cloud_server = create_server(server)
+      end
+
+      it "should equal to the dns_name of the AWS Server instance" do
+        server.aws_dns_name.should == @existing_cloud_server.dns_name
+      end
+    end
   end
 
   describe "#cloud_state" do

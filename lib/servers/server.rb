@@ -21,12 +21,20 @@ module KnifeNitrous
       @cloud_instance = nil
     end
 
-    def cloud_instance
+    def aws_dns_name
+      self.cloud_instance(include_all: true).dns_name
+    end
+
+    def cloud_instance(opts = {})
       unless @cloud_instance
         @cloud_instance = compute.servers.all.select do |s|
-          s.state != 'terminated' &&
-          s.state != 'shutting-down' &&
-          s.tags['Name'] == self.hostname
+          true_condition = if opts[:include_all]
+            true
+          else
+            s.state != 'terminated' && s.state != 'shutting-down'
+          end
+
+          true_condition && s.tags['Name'] == self.hostname
         end.first
       end
 

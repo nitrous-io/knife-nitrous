@@ -41,7 +41,7 @@ module KnifeNitrous
     end
 
     def tcp_test_ssh
-      tcp_socket = TCPSocket.new(self.hostname, self.ssh_port)
+      tcp_socket = TCPSocket.new(self.aws_dns_name, self.ssh_port)
       readable = IO.select([tcp_socket], nil, nil, 5)
       if readable
         yield

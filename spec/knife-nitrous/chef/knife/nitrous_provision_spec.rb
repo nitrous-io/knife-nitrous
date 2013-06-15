@@ -221,13 +221,15 @@ describe KnifeNitrous::NitrousProvision do
   describe "#chef_runner_for_node" do
     before do
       @server = @server_collection.to_a[0]
+      @server.stub!(:aws_dns_name) { 'fake.local' }
+
       @timestamp = Time.now.to_i
 
       @ssh = @knife_nitrous_provision.chef_runner_for_node(@server, @timestamp)
     end
 
     it "should set the name_args to include the server name and the chef-client command" do
-      @ssh.name_args.should == [@server.hostname, "sudo chef-client -c /etc/chef/client.rb -j /tmp/#{@server.type}-#{@timestamp}.json"]
+      @ssh.name_args.should == ['fake.local', "sudo chef-client -c /etc/chef/client.rb -j /tmp/#{@server.type}-#{@timestamp}.json"]
     end
 
     it "should set the ssh_user to the default nitrous sudo user" do

@@ -139,7 +139,13 @@ describe KnifeNitrous::NitrousBootstrap do
   describe "#bootstrap_chef_for_node" do
     before do
       @server = @server_collection.to_a[0]
+      @server.stub!(:aws_dns_name) { 'fake.local' }
+
       @bootstrap = @knife_nitrous_bootstrap.bootstrap_chef_for_node(@server)
+    end
+
+    it "should set the server to connect to to it's AWS DNS name" do
+      @bootstrap.name_args.should == ['fake.local']
     end
 
     it "should set the ssh_user to the default nitrous user" do
