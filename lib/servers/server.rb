@@ -90,6 +90,8 @@ module KnifeNitrous
         !current_devices.include? block.name
       end
 
+      puts "Provisioning New Volumes" unless new_volumes.empty?
+
       new_volumes.each do |block|
         volume = cloud_instance.volumes.new(
                                              device: block.name,
@@ -100,6 +102,7 @@ module KnifeNitrous
                                            )
         volume.server = cloud_instance
         volume.save
+        puts "Provisioned: #{volume.device}: #{volume.size} #{volume.snapshop_id}"
       end
     end
 
