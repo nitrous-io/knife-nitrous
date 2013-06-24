@@ -9,12 +9,17 @@ module KnifeNitrous
     attr_reader :name, :server_collection
 
     def run
+      puts "===> " + ui.color('Parsing ServerCollection from nitrous.json', :magenta)
       @server_collection = KnifeNitrous::ServerCollection.parse
+
+      puts "===> " + ui.color("Provisioning Security Groups")
       server_collection.provision_security_group!
 
       server_collection.each do |s|
         if s.cloud_state == 'terminated'
+          puts "===> " + ui.color("Provisioning Server: #{s.hostname}", :magenta)
           s.provision
+          puts "===> " + ui.color("Bootstrapping Chef on Server: #{s.hostname}", :magenta)
           self.bootstrap_chef_for_node(s).run
         end
       end
