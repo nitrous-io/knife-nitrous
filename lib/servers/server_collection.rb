@@ -2,13 +2,13 @@ module KnifeNitrous
   class ServerCollection
 
     attr_accessor :current_region, :environment
-    attr_reader   :regions, :security_group, :type
+    attr_reader   :regions, :security_group_hash, :type
 
     def initialize(type, security_group_hash)
       @servers, @regions = [], []
 
       @type = type
-      @security_group = KnifeNitrous::SecurityGroup.from_hash(security_group_hash)
+      @security_group_hash = security_group_hash
     end
 
     def add(server)
@@ -17,7 +17,9 @@ module KnifeNitrous
 
     def provision_security_group!
       @regions = @servers.map(&:region).uniq.sort
-      @regions.each { |r| @security_group.provision(r) }
+      @regions.each do |r|
+        KnifeNitrous::SecurityGroup.from_hash(security_group_hash).provision(r)
+      end
     end
 
     def each(&block); @servers.each { |s| yield(s) }; end

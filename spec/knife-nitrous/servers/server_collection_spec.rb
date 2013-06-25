@@ -52,7 +52,7 @@ describe KnifeNitrous::ServerCollection do
           servers = server_collection.to_a
 
           server_collection.type.should == 'root-www'
-          server_collection.security_group.name.should == 'root-www'
+          server_collection.security_group_hash.should be_present
 
           servers[0].hostname.should == 'nitrous.io'
           servers[0].size.should == 'm1.small'
