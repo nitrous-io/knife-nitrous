@@ -102,7 +102,11 @@ module KnifeNitrous
                                            )
         volume.server = cloud_instance
         volume.save
-        Fog.wait_for { print "."; volume.ready? }
+
+        # Wait for the volume to be attached
+        while volume.state != 'in-use' do
+          print "."; sleep 1
+        end
 
         puts "\nProvisioned: #{volume.device}: #{volume.size} #{volume.snapshop_id}"
       end

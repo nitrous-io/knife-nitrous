@@ -415,23 +415,26 @@ describe KnifeNitrous::Server do
 
     before do
       create_server(server)
-      cloud_instance.stub(:wait_for)
+
       server.stub(:tcp_test_ssh).and_return(true)
       # this is the currently attached EBS volumes
       volumes.all = [stub(device: '/dev/sdf'), stub(device: '/dev/sdg')]
       cloud_instance.stub(:volumes) { volumes }
     end
 
-    it 'attached a new volume to the server' do
+    it 'attaches a new volume to the server' do
       server.block_devices = KnifeNitrous::BlockDeviceCollection.new([
         {name: "/dev/sdf", size: 10},
         {name: "/dev/sdg", size: 10},
         {name: "/dev/sdk", size: 10}
       ])
-      volume = OpenStruct.new
+
+      volume = OpenStruct.new(state: 'in-use')
+
       cloud_instance.volumes.should_receive(:new).with(hash_including({
         device: "/dev/sdk", size: 10
       })) { volume }
+
       volume.should_receive(:save)
       server.setup_volumes
     end
