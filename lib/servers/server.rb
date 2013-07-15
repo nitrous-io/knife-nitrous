@@ -108,7 +108,7 @@ module KnifeNitrous
           print "."; sleep 1
         end
 
-        puts "\nProvisioned: #{volume.device}: #{volume.size} #{volume.snapshop_id}"
+        puts "\nProvisioned: #{volume.device}: #{volume.size} #{volume.snapshot_id}"
       end
     end
 
