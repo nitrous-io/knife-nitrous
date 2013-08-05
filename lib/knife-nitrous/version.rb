@@ -1,3 +1,3 @@
 module KnifeNitrous
-  VERSION = "0.0.13.1"
+  VERSION = "0.0.14"
 end
