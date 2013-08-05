@@ -21,6 +21,10 @@ module KnifeNitrous
       @cloud_instance = nil
     end
 
+    def attributes
+      @attributes.merge!('region' => self.region)
+    end
+
     def aws_dns_name
       self.cloud_instance(include_all: true).dns_name
     end

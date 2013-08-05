@@ -264,7 +264,7 @@ describe KnifeNitrous::NitrousProvision do
     it "should set the name_args to include the server name and the chef-client command" do
       @ssh.name_args.should == [
                                   @server.hostname,
-                                  "sudo /opt/chef/embedded/bin/ruby -e \"require 'json'; File.open('/tmp/root-www-#{@timestamp}.json', 'w') { |f| f.puts('{\\\"environment\\\":\\\"production\\\"}') }\""
+                                  "sudo /opt/chef/embedded/bin/ruby -e \"require 'json'; File.open('/tmp/root-www-#{@timestamp}.json', 'w') { |f| f.puts('{\\\"environment\\\":\\\"production\\\",\\\"region\\\":\\\"us-east-1\\\"}') }\""
                                ]
     end
 
