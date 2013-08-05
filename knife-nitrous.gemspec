@@ -12,12 +12,12 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{Knife plugin that allows you to create/provision Nitrous.IO servers on EC2 using Chef-Solo}
   gem.homepage      = "https://www.nitrous.io"
 
-  gem.add_dependency  "fog",            "~> 1.10.0"
+  gem.add_dependency  "fog",            "~> 1.14.0"
   gem.add_dependency  "domainatrix",    "~> 0.0.11"
   gem.add_dependency  "activesupport",  "~> 3.2.8"
   gem.add_dependency  "ipaddress",      "~> 0.8.0"
 
-  gem.add_development_dependency  "chef",   "~> 11.4.4"
+  gem.add_development_dependency  "chef",   "~> 11.6.0"
   gem.add_development_dependency  "rspec",  "~> 2.12.0"
   gem.add_development_dependency  "fakefs", "~> 0.4.2"
   gem.add_development_dependency  "rake"
