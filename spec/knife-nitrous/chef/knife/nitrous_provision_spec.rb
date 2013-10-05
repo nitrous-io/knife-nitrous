@@ -50,6 +50,11 @@ describe KnifeNitrous::NitrousProvision do
         @knife_nitrous_provision.run
       end
 
+      it "should provision the security group for regions of each server" do
+        @knife_nitrous_provision.should_receive(:provision_security_group!).with(@server_collection.to_a, @server_collection.security_group_hash)
+        @knife_nitrous_provision.run
+      end
+
       it "should setup volumes for each of the servers" do
         @server_collection.to_a.each { |s| s.should_receive(:setup_volumes).and_return(true) }
 
@@ -97,6 +102,11 @@ describe KnifeNitrous::NitrousProvision do
 
       it "should parse the config file" do
         KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_provision.run
+      end
+
+      it "should provision the security group for regions of each server" do
+        @knife_nitrous_provision.should_receive(:provision_security_group!).with(@server_collection.to_a, @server_collection.security_group_hash)
         @knife_nitrous_provision.run
       end
 
@@ -157,6 +167,13 @@ describe KnifeNitrous::NitrousProvision do
         @knife_nitrous_provision.run
       end
 
+      it "should provision the security group for regions of each server" do
+        server_collection = @server_collection.to_a
+        servers_to_provision = [ server_collection[0] ]
+        @knife_nitrous_provision.should_receive(:provision_security_group!).with(servers_to_provision, @server_collection.security_group_hash)
+        @knife_nitrous_provision.run
+      end
+
       it "should run chef-client on each of the servers in the server collection" do
         @knife_nitrous_provision.should_receive(:chef_runner_for_node).
                                  once.
@@ -204,6 +221,13 @@ describe KnifeNitrous::NitrousProvision do
       it "should setup volumes for each of the servers" do
         @server_collection.to_a[2].should_receive(:setup_volumes).and_return(true)
 
+        @knife_nitrous_provision.run
+      end
+
+      it "should provision the security group for regions of each server" do
+        server_collection = @server_collection.to_a
+        servers_to_provision = [ server_collection[2] ]
+        @knife_nitrous_provision.should_receive(:provision_security_group!).with(servers_to_provision, @server_collection.security_group_hash)
         @knife_nitrous_provision.run
       end
 
