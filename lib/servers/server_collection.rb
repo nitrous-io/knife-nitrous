@@ -15,13 +15,6 @@ module KnifeNitrous
       @servers.push server
     end
 
-    def provision_security_group!
-      @regions = @servers.map(&:region).uniq.sort
-      @regions.each do |r|
-        KnifeNitrous::SecurityGroup.from_hash(security_group_hash).provision(r)
-      end
-    end
-
     def each(&block); @servers.each { |s| yield(s) }; end
 
     def size; @servers.size; end

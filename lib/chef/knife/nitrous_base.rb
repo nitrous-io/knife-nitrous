@@ -28,6 +28,15 @@ class Chef
         end
       end
 
+    def provision_security_group!(servers, security_group_hash)
+      return unless servers.respond_to?(:map)
+
+      regions = servers.map(&:region).uniq.sort
+      regions.each do |r|
+        KnifeNitrous::SecurityGroup.from_hash(security_group_hash).provision(r)
+      end
+    end
+
       def bootstrap_chef_for_node(server)
         bootstrap = Chef::Knife::Bootstrap.new
         bootstrap.name_args = [server.aws_dns_name]
