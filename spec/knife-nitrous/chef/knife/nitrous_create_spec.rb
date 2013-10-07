@@ -40,7 +40,7 @@ describe KnifeNitrous::NitrousCreate do
     end
 
     it "should provision the security group for that type" do
-      @server_collection.should_receive(:provision_security_group!)
+      @knife_nitrous_create.should_receive(:provision_security_group!).with(@server_collection, @server_collection.security_group_hash)
       @knife_nitrous_create.run
     end
 

@@ -32,6 +32,8 @@ module KnifeNitrous
         end
       end
 
+      self.provision_security_group! servers_to_provision, server_collection.security_group_hash
+
       servers_to_provision.each do |s|
         timestamp = Time.now.to_i
 

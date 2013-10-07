@@ -13,7 +13,7 @@ module KnifeNitrous
       @server_collection = KnifeNitrous::ServerCollection.parse
 
       puts "===> " + ui.color("Provisioning Security Groups")
-      server_collection.provision_security_group!
+      self.provision_security_group! server_collection, server_collection.security_group_hash
 
       server_collection.each do |s|
         if s.cloud_state == 'terminated'
