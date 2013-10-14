@@ -36,7 +36,11 @@ module KnifeNitrous
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
 
       servers_to_provision.each do |s|
-        bootstrap_chef_for_node(s).run if s.cloud_state == 'running'
+        if s.cloud_state == 'running'
+          s.setup_volumes
+
+          bootstrap_chef_for_node(s).run
+        end
       end
     end
 

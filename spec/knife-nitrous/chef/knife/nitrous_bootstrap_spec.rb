@@ -33,6 +33,10 @@ describe KnifeNitrous::NitrousBootstrap do
         @server_collection.to_a[1].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
 
+        @server_collection.to_a[0].stub!(:setup_volumes) { true }
+        @server_collection.to_a[1].stub!(:setup_volumes) { true }
+        @server_collection.to_a[2].stub!(:setup_volumes) { true }
+
         @knife_nitrous_bootstrap.stub!(:bootstrap_chef_for_node) { bootstrap }
         bootstrap.stub!(:run)
       end
@@ -55,6 +59,12 @@ describe KnifeNitrous::NitrousBootstrap do
 
         @knife_nitrous_bootstrap.run
       end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a.each { |s| s.should_receive(:setup_volumes).and_return(true) }
+
+        @knife_nitrous_bootstrap.run
+      end
     end
 
     context "with no params set and only two servers are running" do
@@ -64,6 +74,9 @@ describe KnifeNitrous::NitrousBootstrap do
         @server_collection.to_a[0].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[1].stub!(:cloud_state) { 'stopped' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
+
+        @server_collection.to_a[0].stub!(:setup_volumes) { true }
+        @server_collection.to_a[2].stub!(:setup_volumes) { true }
 
         @knife_nitrous_bootstrap.stub!(:bootstrap_chef_for_node) { bootstrap }
         bootstrap.stub!(:run)
@@ -87,6 +100,13 @@ describe KnifeNitrous::NitrousBootstrap do
 
         @knife_nitrous_bootstrap.run
       end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a[0].should_receive(:setup_volumes).and_return(true)
+        @server_collection.to_a[2].should_receive(:setup_volumes).and_return(true)
+
+        @knife_nitrous_bootstrap.run
+      end
     end
 
     context "with the region set" do
@@ -96,6 +116,8 @@ describe KnifeNitrous::NitrousBootstrap do
         @server_collection.to_a[0].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[1].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
+
+        @server_collection.to_a[0].stub!(:setup_volumes) { true }
 
         @knife_nitrous_bootstrap.config[:region] = ['us-east-1']
         @knife_nitrous_bootstrap.stub!(:bootstrap_chef_for_node) { bootstrap }
@@ -114,6 +136,11 @@ describe KnifeNitrous::NitrousBootstrap do
         @knife_nitrous_bootstrap.run
       end
 
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a[0].should_receive(:setup_volumes).and_return(true)
+
+        @knife_nitrous_bootstrap.run
+      end
 
       it "should run chef-client on each of the servers in the server collection" do
         @knife_nitrous_bootstrap.should_receive(:bootstrap_chef_for_node).
@@ -133,6 +160,8 @@ describe KnifeNitrous::NitrousBootstrap do
         @server_collection.to_a[1].stub!(:cloud_state) { 'running' }
         @server_collection.to_a[2].stub!(:cloud_state) { 'running' }
 
+        @server_collection.to_a[2].stub!(:setup_volumes) { true }
+
         @knife_nitrous_bootstrap.config[:hostname] = 'sensu-staging.nitrous.io'
         @knife_nitrous_bootstrap.stub!(:bootstrap_chef_for_node) { bootstrap }
         bootstrap.stub!(:run)
@@ -140,6 +169,12 @@ describe KnifeNitrous::NitrousBootstrap do
 
       it "should parse the config file" do
         KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_bootstrap.run
+      end
+
+      it "should setup volumes for each of the servers" do
+        @server_collection.to_a[2].should_receive(:setup_volumes).and_return(true)
+
         @knife_nitrous_bootstrap.run
       end
 
