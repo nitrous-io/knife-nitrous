@@ -29,7 +29,8 @@ module KnifeNitrous
 
       begin
         parsed_json = JSON.parse(File.read(config_file))
-      rescue JSON::ParserError
+      rescue JSON::ParserError => e
+        p "Invalid JSON. Check your nitrous.json file: #{e.message}"
         return nil
       end
 
