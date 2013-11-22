@@ -29,8 +29,8 @@ module KnifeNitrous
 
       begin
         parsed_json = JSON.parse(File.read(config_file))
-      rescue JSON::ParserError => e
-        p "Invalid JSON. Check your nitrous.json file: #{e.message}"
+      rescue JSON::ParserError
+        p "Invalid JSON. Check your nitrous.json file."
         return nil
       end
 
@@ -38,6 +38,9 @@ module KnifeNitrous
                                    parsed_json['security_group'].merge!('name' => parsed_json['type']))
 
       parsed_json['servers'].each do |server_config|
+        if parsed_json["servers_common"]
+          server_config = deep_merge parsed_json["servers_common"], server_config
+        end
         server = KnifeNitrous::Server.new(hostname: server_config['hostname'],
                                           size: server_config['size'],
                                           ami: server_config['ami'],
@@ -53,6 +56,20 @@ module KnifeNitrous
       end
 
       server_collection
+    end
+
+    # deep merge changes from other_hash to hash, returns a copy of hash
+    def self.deep_merge(hash, other_hash)
+      dhash = hash.dup
+      other_hash.each_pair do |k,v|
+        tv = dhash[k]
+        if tv.is_a?(Hash) && v.is_a?(Hash)
+          dhash[k] = deep_merge(tv, v)
+        else
+          dhash[k] = v
+        end
+      end
+      dhash
     end
   end
 end

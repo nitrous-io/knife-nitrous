@@ -2,9 +2,9 @@ require 'spec_helper'
 
 describe KnifeNitrous::ServerCollection do
   let!(:config_file)    { 'nitrous.json' }
+  let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json")) }
 
   before do
-    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json"))
     FakeFS.activate!
 
     FileUtils.rm_rf(config_file) if File.exists?(config_file)
@@ -41,6 +41,19 @@ describe KnifeNitrous::ServerCollection do
       end
 
       context "nitrous.json is valid JSON" do
+        context "nitrous.json defined a servers_common attribute" do
+          let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server-common.json")) }
+
+          it "merges the common attributes back to individual server" do
+            server_collection = KnifeNitrous::ServerCollection.parse
+            server_collection.to_a.should_not be_empty
+            server_collection.to_a.each do |server|
+              server.hostname.should_not eq("willbeignore")
+              server.attributes["base_template"].should eq("common_base_template")
+            end
+          end
+        end
+
         it "should return a server collection" do
           server_collection = KnifeNitrous::ServerCollection.parse
           server_collection.class.should == KnifeNitrous::ServerCollection
