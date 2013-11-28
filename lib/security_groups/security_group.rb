@@ -37,8 +37,9 @@ module KnifeNitrous
     end
 
     def self.from_hash(hash)
-      security_group = KnifeNitrous::SecurityGroup.new(hash['name'])
-      hash['rules'].each { |r| security_group.add_rule KnifeNitrous::SecurityRule.parse(r) }
+      name = hash.keys.first
+      security_group = KnifeNitrous::SecurityGroup.new(name)
+      hash['name']['rules'].each { |r| security_group.add_rule KnifeNitrous::SecurityRule.parse(r) }
       security_group
     end
   end

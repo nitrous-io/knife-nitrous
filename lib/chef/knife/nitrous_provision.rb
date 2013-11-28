@@ -15,10 +15,30 @@ module KnifeNitrous
       long: "--hostname HOSTNAME",
       description: "The host you want to run chef in"
 
+    option :yaml_file,
+      short: "-F FILE",
+      long: "--yaml_file FILE",
+      description: "YAML file definition for servers."
+
+    option :sg_directory,
+      short: "-S DIRECTORY",
+      long: "--sg_yaml DIRECTORY",
+      description: "Directory containing security groups in YAML format."
+
     attr_reader :name, :server_collection
 
     def run
-      @server_collection = KnifeNitrous::ServerCollection.parse
+      if config[:yaml_file].nil?
+        ui.error("You have not provided a YAML server config file (-F).")
+        exit 1
+      end
+
+      if config[:sg_directory].nil?
+        ui.error("You have not provided a directory containing security group YAML files (-S).")
+        exit 1
+      end
+
+      @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
       server_array = @server_collection.to_a
       servers_to_provision = server_array
 

@@ -3,19 +3,20 @@ require 'spec_helper'
 require 'chef/knife/ssh'
 
 describe KnifeNitrous::NitrousProvision do
-  let!(:config_file)    { 'nitrous.json' }
+  let!(:config_file)    { 'test.yml' }
+  let!(:sg_directory)   { File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "security_groups") }
 
   before do
     @knife_nitrous_provision = KnifeNitrous::NitrousProvision.new
 
-    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json"))
+    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml"))
     FakeFS.activate!
 
     FileUtils.rm_rf(config_file) if File.exists?(config_file)
     File.open(config_file, 'w') { |f| f.puts config }
     setup_aws_credentials!
 
-    @server_collection = KnifeNitrous::ServerCollection.parse
+    @server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
     KnifeNitrous::ServerCollection.stub!(:parse) { @server_collection }
   end
 

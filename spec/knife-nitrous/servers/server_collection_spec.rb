@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 describe KnifeNitrous::ServerCollection do
-  let!(:config_file)    { 'nitrous.json' }
-  let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json")) }
+  let!(:config_file)    { 'test.yml' }
+  let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml")) }
 
   before do
     FakeFS.activate!
@@ -19,9 +19,9 @@ describe KnifeNitrous::ServerCollection do
   end
 
   describe ".parse" do
-    context "nitrous.json doesn't exist in cwd" do
+    context "server config file doesn't exist in cwd" do
       before do
-        FileUtils.rm_rf('nitrous.json')
+        FileUtils.rm_rf('test.yml')
       end
 
       it "should return nil" do
@@ -29,10 +29,10 @@ describe KnifeNitrous::ServerCollection do
       end
     end
 
-    context "nitrous.json does exist in cwd" do
-      context "nitrous.json is invalid JSON" do
+    context "config file does exist in cwd" do
+      context "config file has invalid YAML" do
         before do
-          File.open(config_file, 'w') { |f| f.puts "abc" }
+          File.open(config_file, 'w') { |f| f.puts ">abc;" }
         end
 
         it "should return nil" do
@@ -40,9 +40,9 @@ describe KnifeNitrous::ServerCollection do
         end
       end
 
-      context "nitrous.json is valid JSON" do
-        context "nitrous.json defined a servers_common attribute" do
-          let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server-common.json")) }
+      context "config file has valid YAML" do
+        context "config file defined a servers_common attribute" do
+          let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server-common.yml")) }
 
           it "merges the common attributes back to individual server" do
             server_collection = KnifeNitrous::ServerCollection.parse

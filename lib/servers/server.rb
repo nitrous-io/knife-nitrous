@@ -4,7 +4,7 @@ module KnifeNitrous
 
     attr_accessor :hostname, :type, :region, :environment,
                   :size, :ami, :block_devices, :attributes,
-                  :cookbook, :availability_zone
+                  :run_list, :availability_zone
 
     attr_reader   :ssh_port, :ip
 
@@ -16,7 +16,7 @@ module KnifeNitrous
 
       opts.each { |k,v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
 
-      @cookbook = "#{@type}-cookbook" if @cookbook.nil?
+      @run_list = [] if @run_list.nil?
       @ssh_port = SSH_PORT
       @cloud_instance = nil
     end
