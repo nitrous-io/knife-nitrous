@@ -37,7 +37,8 @@ module KnifeNitrous
       security_groups = {}
       Dir.glob("#{security_group_directory}/**/*").each do |file|
         begin
-          security_groups.merge!(YAML.load(File.read(file)))
+          yaml = YAML.load(File.read(file))
+          security_groups.merge!(yaml)
         rescue Psych::SyntaxError
           p "Invalid YAML. Check your #{file} file."
           return nil

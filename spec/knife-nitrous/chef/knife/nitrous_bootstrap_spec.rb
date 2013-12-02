@@ -4,17 +4,33 @@ require 'chef/knife/bootstrap'
 
 describe KnifeNitrous::NitrousBootstrap do
   let!(:config_file)    { 'test.yml' }
-  let!(:sg_directory)   { File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "security_groups") }
+  let!(:sg_directory)   { 'security_groups' }
 
   before do
     @knife_nitrous_bootstrap = KnifeNitrous::NitrousBootstrap.new
 
     config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml"))
+
+    sg_directives = {}
+
+    Dir.glob("#{File.join(Knife::Nitrous::ROOT, 'spec', 'fixtures', 'security_groups')}/**/*").each do |file|
+      sg_directives.merge!({ File.basename(file) => File.read(file) })
+    end
+
     FakeFS.activate!
 
     FileUtils.rm_rf(config_file) if File.exists?(config_file)
     File.open(config_file, 'w') { |f| f.puts config }
-    @knife_nitrous_bootstrap.parse_options(["-F", config_file, "-S", sg_directory])
+    FileUtils.rm_rf(sg_directory) if File.exists?(sg_directory)
+    FileUtils.mkdir(sg_directory)
+    sg_directives.each do |sg_file, opts|
+      File.open("#{sg_directory}/#{sg_file}", 'w') { |f| f.puts opts }
+    end
+
+    #@knife_nitrous_bootstrap.parse_options(["-F", config_file, "-S", sg_directory])
+    @knife_nitrous_bootstrap.config[:yaml_file] = config_file
+    @knife_nitrous_bootstrap.config[:sg_directory] = sg_directory
+
     setup_aws_credentials!
 
     @server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
@@ -44,7 +60,7 @@ describe KnifeNitrous::NitrousBootstrap do
       end
 
       it "should parse the config file" do
-        KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        KnifeNitrous::ServerCollection.should_receive(:parse).with(config_file, sg_directory).and_return(@server_collection)
         @knife_nitrous_bootstrap.run
       end
 
@@ -85,7 +101,7 @@ describe KnifeNitrous::NitrousBootstrap do
       end
 
       it "should parse the config file" do
-        KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        KnifeNitrous::ServerCollection.should_receive(:parse).with(config_file, sg_directory).and_return(@server_collection)
         @knife_nitrous_bootstrap.run
       end
 
@@ -127,7 +143,7 @@ describe KnifeNitrous::NitrousBootstrap do
       end
 
       it "should parse the config file" do
-        KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        KnifeNitrous::ServerCollection.should_receive(:parse).with(config_file, sg_directory).and_return(@server_collection)
         @knife_nitrous_bootstrap.run
       end
 
@@ -170,7 +186,7 @@ describe KnifeNitrous::NitrousBootstrap do
       end
 
       it "should parse the config file" do
-        KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        KnifeNitrous::ServerCollection.should_receive(:parse).with(config_file, sg_directory).and_return(@server_collection)
         @knife_nitrous_bootstrap.run
       end
 
@@ -223,7 +239,7 @@ describe KnifeNitrous::NitrousBootstrap do
     end
 
     it "should set the run list to be the server's type" do
-      @bootstrap.config[:run_list].should == "recipe[#{@server.cookbook}]"
+      @bootstrap.config[:run_list].should == @server.run_list
     end
 
     it "should set the chef node name to be the server's hostname" do

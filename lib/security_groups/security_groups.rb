@@ -14,7 +14,23 @@ module KnifeNitrous
     end
 
     def eql?(groups)
-      self.groups.eql?(groups)
+      # FIXME: n^2 time. yuck.
+      comparison = []
+      self.groups.each do |obj_group|
+        groups.each do |comparison_group|
+          comparison << obj_group.eql?(comparison_group)
+        end
+      end
+
+      if comparison.include?(false)
+        false
+      else
+        true
+      end
+    end
+
+    def ==(groups)
+      self.groups == groups
     end
 
     def self.from_hash(hash)

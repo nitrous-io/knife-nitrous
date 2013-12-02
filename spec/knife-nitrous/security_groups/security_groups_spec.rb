@@ -37,7 +37,7 @@ describe KnifeNitrous::SecurityGroups do
       security_groups = KnifeNitrous::SecurityGroups.from_hash(hash)
       security_groups.class.should == KnifeNitrous::SecurityGroups
       security_groups.groups.size.should == 2
-      security_groups.groups.each { |x| x.class.should == "KnifeNitrous::SecurityGroup" }
+      security_groups.groups.each { |x| x.class.should == KnifeNitrous::SecurityGroup }
     end
   end
 end

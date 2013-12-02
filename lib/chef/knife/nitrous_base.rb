@@ -35,7 +35,7 @@ class Chef
 
       regions = servers.map(&:region).uniq.sort
       regions.each do |r|
-        KnifeNitrous::SecurityGroup.from_hash(security_group_hash).each do |sg|
+        KnifeNitrous::SecurityGroups.from_hash(security_group_hash).to_a.each do |sg|
           sg.provision(r)
         end
       end

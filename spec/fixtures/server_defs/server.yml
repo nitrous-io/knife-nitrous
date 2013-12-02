@@ -1,5 +1,5 @@
 type: root-www
-run_list: [ "root-www_cookbook" ]
+run_list: [ "recipe[root-www_cookbook]" ]
 security_groups:
   - web
   - ssh
