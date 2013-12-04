@@ -29,7 +29,7 @@ describe KnifeNitrous::Server do
                              environment: 'development',
                              size: 'm1.small',
                              ami: 'ami-deadbeef',
-                             cookbook: 'example_cookbook')
+                             run_list: ['recipe[example_cookbook]'])
   end
 
   before :all do
@@ -67,7 +67,7 @@ describe KnifeNitrous::Server do
           @server.type.should == 'example'
           # If the cookbook isn't set then it should be set to
           # #{type}-cookbook
-          @server.cookbook.should == 'example-cookbook'
+          #@server.cookbook.should == 'example-cookbook'
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -91,11 +91,11 @@ describe KnifeNitrous::Server do
                                              environment: 'development',
                                              size: 'm1.small',
                                              ami: 'ami-deadbeef',
-                                             cookbook: 'example_cookbook')
+                                             run_list: ['recipe[example_cookbook]'])
 
           @server.hostname.should == 'example.action.io'
           @server.type.should == 'example'
-          @server.cookbook.should == 'example_cookbook'
+          @server.run_list.should == ['recipe[example_cookbook]']
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -121,7 +121,7 @@ describe KnifeNitrous::Server do
         @server.should_not_receive(:ask)
         @server.hostname.should == 'example.action.io'
         @server.type.should == 'example'
-        @server.cookbook.should == 'example-cookbook'
+        #@server.cookbook.should == 'example-cookbook'
         @server.region.should == 'ap-southeast-1'
         @server.environment.should == 'development'
         @server.size.should == 'm1.small'

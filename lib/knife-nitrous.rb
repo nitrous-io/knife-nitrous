@@ -21,6 +21,7 @@ require "mixins/aws"
 
 require "security_groups/security_rule"
 require "security_groups/security_group"
+require "security_groups/security_groups"
 
 require "block_devices/block_device"
 require "block_devices/block_device_collection"

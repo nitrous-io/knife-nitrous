@@ -10,6 +10,7 @@ class Chef
             require 'chef/knife/bootstrap'
             require 'chef/knife/ssh'
 
+            require 'yaml'
             require 'ipaddress'
             require 'domainatrix'
             require 'fog'
@@ -17,6 +18,7 @@ class Chef
             require 'categories/security_group+nitrous'
             require 'security_groups/security_rule'
             require 'security_groups/security_group'
+            require 'security_groups/security_groups'
             require 'block_devices/block_device'
             require 'block_devices/block_device_collection'
             require 'servers/server'
@@ -33,14 +35,16 @@ class Chef
 
       regions = servers.map(&:region).uniq.sort
       regions.each do |r|
-        KnifeNitrous::SecurityGroup.from_hash(security_group_hash).provision(r)
+        KnifeNitrous::SecurityGroups.from_hash(security_group_hash).to_a.each do |sg|
+          sg.provision(r)
+        end
       end
     end
 
       def bootstrap_chef_for_node(server)
         bootstrap = Chef::Knife::Bootstrap.new
         bootstrap.name_args = [server.aws_dns_name]
-        bootstrap.config[:run_list] = "recipe[#{server.cookbook}]"
+        bootstrap.config[:run_list] = server.run_list
         bootstrap.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         bootstrap.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
         bootstrap.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"

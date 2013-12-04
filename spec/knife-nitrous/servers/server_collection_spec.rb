@@ -1,14 +1,27 @@
 require 'spec_helper'
 
 describe KnifeNitrous::ServerCollection do
-  let!(:config_file)    { 'nitrous.json' }
-  let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json")) }
+  let!(:config_file)    { 'test.yml' }
+  let!(:sg_directory)   { 'security_groups' }
+  let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml")) }
 
   before do
+    sg_directives = {}
+
+    Dir.glob("#{File.join(Knife::Nitrous::ROOT, 'spec', 'fixtures', 'security_groups')}/**/*").each do |file|
+      sg_directives.merge!({ File.basename(file) => File.read(file) })
+    end
+
     FakeFS.activate!
 
     FileUtils.rm_rf(config_file) if File.exists?(config_file)
     File.open(config_file, 'w') { |f| f.puts config }
+
+    FileUtils.rm_rf(sg_directory) if File.exists?(sg_directory)
+    FileUtils.mkdir(sg_directory)
+    sg_directives.each do |sg_file, opts|
+      File.open("#{sg_directory}/#{sg_file}", 'w') { |f| f.puts opts }
+    end
 
     setup_aws_credentials!
   end
@@ -19,33 +32,33 @@ describe KnifeNitrous::ServerCollection do
   end
 
   describe ".parse" do
-    context "nitrous.json doesn't exist in cwd" do
+    context "server config file doesn't exist in cwd" do
       before do
-        FileUtils.rm_rf('nitrous.json')
+        FileUtils.rm_rf('test.yml')
       end
 
       it "should return nil" do
-        KnifeNitrous::ServerCollection.parse.should be_nil
+        KnifeNitrous::ServerCollection.parse(config_file, sg_directory).should be_nil
       end
     end
 
-    context "nitrous.json does exist in cwd" do
-      context "nitrous.json is invalid JSON" do
+    context "config file does exist in cwd" do
+      context "config file has invalid YAML" do
         before do
-          File.open(config_file, 'w') { |f| f.puts "abc" }
+          File.open(config_file, 'w') { |f| f.puts ">abc;" }
         end
 
         it "should return nil" do
-          KnifeNitrous::ServerCollection.parse.should be_nil
+          KnifeNitrous::ServerCollection.parse(config_file, sg_directory).should be_nil
         end
       end
 
-      context "nitrous.json is valid JSON" do
-        context "nitrous.json defined a servers_common attribute" do
-          let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server-common.json")) }
+      context "config file has valid YAML" do
+        context "config file defined a servers_common attribute" do
+          let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server-common.yml")) }
 
           it "merges the common attributes back to individual server" do
-            server_collection = KnifeNitrous::ServerCollection.parse
+            server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
             server_collection.to_a.should_not be_empty
             server_collection.to_a.each do |server|
               server.hostname.should_not eq("willbeignore")
@@ -55,13 +68,13 @@ describe KnifeNitrous::ServerCollection do
         end
 
         it "should return a server collection" do
-          server_collection = KnifeNitrous::ServerCollection.parse
+          server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
           server_collection.class.should == KnifeNitrous::ServerCollection
           server_collection.size.should == 3
         end
 
         it "should contain an array of KnifeNitrous::Server objects" do
-          server_collection = KnifeNitrous::ServerCollection.parse
+          server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
           servers = server_collection.to_a
 
           server_collection.type.should == 'root-www'
@@ -72,7 +85,7 @@ describe KnifeNitrous::ServerCollection do
           servers[0].region.should == 'us-east-1'
           servers[0].availability_zone.should == 'us-east-1c'
           servers[0].type.should == 'root-www'
-          servers[0].cookbook.should == 'root-www_cookbook'
+          servers[0].run_list.should == ['recipe[root-www_cookbook]']
           servers[0].ami.should == 'ami-deadbeef'
           servers[0].attributes.should == { 'environment' => 'production', 'region' => 'us-east-1' }
 
@@ -82,7 +95,7 @@ describe KnifeNitrous::ServerCollection do
           servers[1].size.should == 'm1.small'
           servers[1].region.should == 'us-west-1'
           servers[1].type.should == 'root-www'
-          servers[1].cookbook.should == 'root-www_cookbook'
+          servers[1].run_list.should == ['recipe[root-www_cookbook]']
           servers[1].ami.should == 'ami-deadbeef'
           servers[1].attributes.should == { 'environment' => 'production', 'region' => 'us-west-1' }
 
@@ -102,7 +115,7 @@ describe KnifeNitrous::ServerCollection do
           servers[2].hostname.should == 'sensu-staging.nitrous.io'
           servers[2].size.should == 'm1.large'
           servers[2].type.should == 'root-www'
-          servers[2].cookbook.should == 'root-www_cookbook'
+          servers[2].run_list.should == ['recipe[root-www_cookbook]']
           servers[2].region.should == 'us-west-1'
           servers[2].ami.should == 'ami-deadbeef'
           servers[2].attributes.should == { 'environment' => 'staging', 'region' => 'us-west-1' }
