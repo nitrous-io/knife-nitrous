@@ -34,6 +34,7 @@ module KnifeNitrous
       security_group = compute.security_groups.get(self.name) ||
                        compute.security_groups.create(name: self.name,
                                                       description: self.name).reload
+
       security_group.sync(@rules)
     end
 

@@ -4,7 +4,7 @@ module KnifeNitrous
 
     attr_accessor :hostname, :type, :region, :environment,
                   :size, :ami, :block_devices, :attributes,
-                  :run_list, :availability_zone
+                  :run_list, :availability_zone, :security_groups
 
     attr_reader   :ssh_port, :ip
 
@@ -193,7 +193,7 @@ module KnifeNitrous
         flavor_id: self.size,
         key_name: "#{self.region}-keypair",
         availability_zone: self.availability_zone || "#{self.region}a",
-        groups: ["#{self.type}"],
+        groups: self.security_groups,
         tags: {
           ip: self.ip,
           Name: self.hostname,

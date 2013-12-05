@@ -15,6 +15,8 @@ module KnifeNitrous
       @servers.push server
     end
 
+    def map(&block) ; @servers.map { |s| yield(s) }; end
+
     def each(&block); @servers.each { |s| yield(s) }; end
 
     def size; @servers.size; end
@@ -64,6 +66,7 @@ module KnifeNitrous
                                           region: server_config['region'],
                                           type: parsed_yaml['type'],
                                           attributes: server_config['attributes'],
+                                          security_groups: security_groups.keys,
                                           run_list: parsed_yaml['run_list'],
                                           availability_zone: server_config['availability_zone'])
 

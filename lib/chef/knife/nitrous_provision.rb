@@ -25,6 +25,11 @@ module KnifeNitrous
       long: "--sg_yaml DIRECTORY",
       description: "Directory containing security groups in YAML format."
 
+    option :solo,
+      :long        => '--[no-]solo',
+      :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
+      :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
+
     attr_reader :name, :server_collection
 
     def run
@@ -35,6 +40,15 @@ module KnifeNitrous
 
       if config[:sg_directory].nil?
         ui.error("You have not provided a directory containing security group YAML files (-S).")
+        exit 1
+      end
+
+      if solo_bootstrap? && !defined?(Chef::Knife::SoloBootstrap)
+        ui.error [
+          'Knife plugin knife-solo was not found.',
+          'Please add the knife-solo gem to your Gemfile or',
+          'install it manually with `gem install knife-solo`.'
+        ].join(" ")
         exit 1
       end
 
@@ -65,6 +79,7 @@ module KnifeNitrous
         end
       end
     end
+
   end
 end
 
