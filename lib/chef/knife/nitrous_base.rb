@@ -56,9 +56,10 @@ class Chef
         bootstrap.config[:distro] = "chef-full"
         bootstrap.config[:use_sudo] = true
 
+        bootstrap.config[:host_key_verify] = false if solo_bootstrap?
+
         # Do some cleanup before we proceed:
         clean_node_directory if solo_bootstrap?
-        remove_host_key_entry(server.aws_dns_name)
 
         # Modify global configuration state to ensure hint gets set by
         # knife-bootstrap
@@ -84,6 +85,7 @@ class Chef
         if solo_bootstrap?
           ssh.config[:run_list] = server.run_list
           ssh.config[:json_attributes] = server.attributes
+          ssh.config[:host_key_verify] = false
         end
 
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
@@ -124,18 +126,6 @@ class Chef
 
       def clean_node_directory
         FileUtils.rm_rf(Dir.glob("#{Chef::Config[:node_path]}/*"))
-      end
-
-      def remove_host_key_entry(hostname)
-        ip = Resolv.getaddress(hostname)
-
-        ssh_keygen_hostname = "[#{hostname}]:#{KnifeNitrous::Server::SSH_PORT}"
-        ssh_keygen_ip       = "[#{ip}]:#{KnifeNitrous::Server::SSH_PORT}"
-
-        puts "Removing host key entries #{ssh_keygen_hostname} and #{ssh_keygen_ip}. Backup created in ~/.ssh/known_hosts.old."
-
-        system("ssh-keygen -R '#{ssh_keygen_hostname}' >/dev/null")
-        system("ssh-keygen -R '#{ssh_keygen_ip}' >/dev/null")
       end
 
       protected
