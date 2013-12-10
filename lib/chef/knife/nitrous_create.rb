@@ -34,15 +34,6 @@ module KnifeNitrous
         exit 1
       end
 
-      if solo_bootstrap? && !defined?(Chef::Knife::SoloBootstrap)
-        ui.error [
-          'Knife plugin knife-solo was not found.',
-          'Please add the knife-solo gem to your Gemfile or',
-          'install it manually with `gem install knife-solo`.'
-        ].join(" ")
-        exit 1
-      end
-
       puts "===> " + ui.color("Parsing ServerCollection from #{config[:yaml_file]} and security group directory #{config[:sg_directory]}", :magenta)
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
 

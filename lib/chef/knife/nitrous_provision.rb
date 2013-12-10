@@ -43,15 +43,6 @@ module KnifeNitrous
         exit 1
       end
 
-      if solo_bootstrap? && !defined?(Chef::Knife::SoloBootstrap)
-        ui.error [
-          'Knife plugin knife-solo was not found.',
-          'Please add the knife-solo gem to your Gemfile or',
-          'install it manually with `gem install knife-solo`.'
-        ].join(" ")
-        exit 1
-      end
-
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
       server_array = @server_collection.to_a
       servers_to_provision = server_array
