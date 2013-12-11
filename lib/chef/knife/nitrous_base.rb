@@ -86,6 +86,7 @@ class Chef
           ssh.config[:run_list] = server.run_list
           ssh.config[:json_attributes] = server.attributes
           ssh.config[:host_key_verify] = false
+          ssh.config[:chef_node_name] = server.hostname
         end
 
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
