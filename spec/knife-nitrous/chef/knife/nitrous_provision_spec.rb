@@ -284,7 +284,7 @@ describe KnifeNitrous::NitrousProvision do
     end
 
     it "should set the identify_file to be the default key which includes the region" do
-      @ssh.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+      @ssh.config[:identity_file].should == "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the manual flag to be true" do
@@ -320,7 +320,7 @@ describe KnifeNitrous::NitrousProvision do
     end
 
     it "should set the identify_file to be the default key which includes the region" do
-      @ssh.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+      @ssh.config[:identity_file].should == "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the manual flag to be true" do

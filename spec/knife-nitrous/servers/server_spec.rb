@@ -29,7 +29,8 @@ describe KnifeNitrous::Server do
                              environment: 'development',
                              size: 'm1.small',
                              ami: 'ami-deadbeef',
-                             run_list: ['recipe[example_cookbook]'])
+                             run_list: ['recipe[example_cookbook]'],
+                             security_groups: ['example-security-group'])
   end
 
   before :all do
@@ -65,9 +66,7 @@ describe KnifeNitrous::Server do
 
           @server.hostname.should == 'example.action.io'
           @server.type.should == 'example'
-          # If the cookbook isn't set then it should be set to
-          # #{type}-cookbook
-          #@server.cookbook.should == 'example-cookbook'
+          @server.run_list.should == []
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -236,7 +235,7 @@ describe KnifeNitrous::Server do
 
   describe "#provision" do
     before do
-      create_security_group_for(server.region, server.type)
+      create_security_group_for(server.region, 'example-security-group')
       create_keypair_for(server.region)
       @zone = create_dns_zone("n2oapp.com")
     end
@@ -318,7 +317,7 @@ describe KnifeNitrous::Server do
           cloud_instance.flavor_id.should == server.size
           cloud_instance.availability_zone.should == "ap-southeast-1a"
           cloud_instance.key_name.should == "ap-southeast-1-keypair"
-          cloud_instance.groups.should == ["example"]
+          cloud_instance.groups.should == ["example-security-group"]
         end
       end
 
@@ -345,7 +344,7 @@ describe KnifeNitrous::Server do
             cloud_instance.flavor_id.should == server.size
             cloud_instance.availability_zone.should == "ap-southeast-1a"
             cloud_instance.key_name.should == "ap-southeast-1-keypair"
-            cloud_instance.groups.should == ["example"]
+            cloud_instance.groups.should == ["example-security-group"]
           end
         end
 
@@ -361,7 +360,7 @@ describe KnifeNitrous::Server do
             cloud_instance.flavor_id.should == server.size
             cloud_instance.availability_zone.should == "ap-southeast-1a"
             cloud_instance.key_name.should == "ap-southeast-1-keypair"
-            cloud_instance.groups.should == ["example"]
+            cloud_instance.groups.should == ["example-security-group"]
           end
         end
       end
