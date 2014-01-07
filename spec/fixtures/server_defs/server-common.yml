@@ -4,9 +4,11 @@ security_groups:
   - web
   - ssh
 servers_common:
-  hostname: willbeignore
+  hostname: will-be-overridden
   attributes:
     base_template: common_base_template
+    nitrous:
+      shared_attr: sharing-is-caring
 servers:
 - hostname: nitrous.io
   elb: true

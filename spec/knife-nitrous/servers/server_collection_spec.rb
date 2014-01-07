@@ -54,15 +54,22 @@ describe KnifeNitrous::ServerCollection do
       end
 
       context "config file has valid YAML" do
-        context "config file defined a servers_common attribute" do
+        context "with servers_common defined" do
           let!(:config) { File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server-common.yml")) }
 
-          it "merges the common attributes back to individual server" do
+          it "merges from servers_common into an individual server's config" do
             server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
             server_collection.to_a.should_not be_empty
             server_collection.to_a.each do |server|
-              server.hostname.should_not eq("willbeignore")
+              server.hostname.should_not eq("will-be-overridden")
               server.attributes["base_template"].should eq("common_base_template")
+            end
+          end
+
+          it "uses attributes from servers_common if not overridden in an individual server's attributes" do
+            server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
+            server_collection.to_a.each do |server|
+              server.attributes['nitrous']['shared_attr'].should eq('sharing-is-caring')
             end
           end
         end
