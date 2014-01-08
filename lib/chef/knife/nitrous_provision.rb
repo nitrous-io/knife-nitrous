@@ -59,14 +59,19 @@ module KnifeNitrous
 
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
 
-      servers_to_provision.each do |s|
+      servers_to_provision.each_with_index do |s, i|
+        puts "===> " + ui.color("Server ##{i}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
 
         if s.cloud_state == 'running'
+          puts "===> " + ui.color("Provisioning server: #{s.hostname}", :magenta)
+
           s.setup_volumes
 
           chef_attributes_loader_for_node(s, timestamp).run
           chef_runner_for_node(s, timestamp).run
+        else
+          puts "===> " + ui.color("Skipping server: #{s.hostname}, state: #{s.cloud_state}", :red)
         end
       end
     end
