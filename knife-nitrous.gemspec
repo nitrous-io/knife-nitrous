@@ -17,11 +17,12 @@ Gem::Specification.new do |gem|
   gem.add_dependency  "activesupport",  "~> 3.2.8"
   gem.add_dependency  "ipaddress",      "~> 0.8.0"
 
-  gem.add_dependency  "knife-solo",     "~> 0.4.0"
+  gem.add_dependency  "knife-solo",           "~> 0.4.0"
+  gem.add_dependency  "knife-solo_data_bag",  "~> 0.4.0"
 
-  gem.add_development_dependency  "chef",   "~> 11.6.0"
-  gem.add_development_dependency  "rspec",  "~> 2.12.0"
-  gem.add_development_dependency  "fakefs", "~> 0.4.2"
+  gem.add_development_dependency  "chef",     "~> 11.6.0"
+  gem.add_development_dependency  "rspec",    "~> 2.12.0"
+  gem.add_development_dependency  "fakefs",   "~> 0.4.2"
   gem.add_development_dependency  "rake"
 
   gem.files         = `git ls-files`.split($/)
