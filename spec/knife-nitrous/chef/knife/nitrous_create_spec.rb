@@ -103,7 +103,7 @@ describe KnifeNitrous::NitrousCreate do
     end
 
     it "should set the identify_file to be the default key which includes the region" do
-      @bootstrap.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+      @bootstrap.config[:identity_file].should == "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the run list to be the server's run_list" do
