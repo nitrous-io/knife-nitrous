@@ -3,19 +3,38 @@ require 'spec_helper'
 require 'chef/knife/ssh'
 
 describe KnifeNitrous::NitrousProvision do
-  let!(:config_file)    { 'nitrous.json' }
+  let!(:config_file)    { 'test.yml' }
+  let!(:sg_directory)   { 'security_groups' }
 
   before do
     @knife_nitrous_provision = KnifeNitrous::NitrousProvision.new
 
-    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json"))
+    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml"))
+
+    sg_directives = {}
+
+    Dir.glob("#{File.join(Knife::Nitrous::ROOT, 'spec', 'fixtures', 'security_groups')}/**/*").each do |file|
+      sg_directives.merge!({ File.basename(file) => File.read(file) })
+    end
+
     FakeFS.activate!
 
     FileUtils.rm_rf(config_file) if File.exists?(config_file)
     File.open(config_file, 'w') { |f| f.puts config }
+    FileUtils.rm_rf(sg_directory) if File.exists?(sg_directory)
+    FileUtils.mkdir(sg_directory)
+    sg_directives.each do |sg_file, opts|
+      File.open("#{sg_directory}/#{sg_file}", 'w') { |f| f.puts opts }
+    end
+
+    #@knife_nitrous_provision.parse_options(["-F", config_file, "-S", sg_directory])
+
+    @knife_nitrous_provision.config[:yaml_file] = config_file
+    @knife_nitrous_provision.config[:sg_directory] = sg_directory
+
     setup_aws_credentials!
 
-    @server_collection = KnifeNitrous::ServerCollection.parse
+    @server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
     KnifeNitrous::ServerCollection.stub!(:parse) { @server_collection }
   end
 
@@ -265,7 +284,7 @@ describe KnifeNitrous::NitrousProvision do
     end
 
     it "should set the identify_file to be the default key which includes the region" do
-      @ssh.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+      @ssh.config[:identity_file].should == "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the manual flag to be true" do
@@ -301,7 +320,7 @@ describe KnifeNitrous::NitrousProvision do
     end
 
     it "should set the identify_file to be the default key which includes the region" do
-      @ssh.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+      @ssh.config[:identity_file].should == "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the manual flag to be true" do

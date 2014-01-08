@@ -10,6 +10,7 @@ class Chef
             require 'chef/knife/bootstrap'
             require 'chef/knife/ssh'
 
+            require 'yaml'
             require 'ipaddress'
             require 'domainatrix'
             require 'fog'
@@ -17,6 +18,7 @@ class Chef
             require 'categories/security_group+nitrous'
             require 'security_groups/security_rule'
             require 'security_groups/security_group'
+            require 'security_groups/security_groups'
             require 'block_devices/block_device'
             require 'block_devices/block_device_collection'
             require 'servers/server'
@@ -24,32 +26,40 @@ class Chef
 
             Chef::Knife::Ssh.load_deps
             Chef::Knife::Bootstrap.load_deps
+            Chef::Knife::SoloBootstrap.load_deps if defined? Chef::Knife::SoloBootstrap
           end
         end
       end
 
-    def provision_security_group!(servers, security_group_hash)
-      return unless servers.respond_to?(:map)
+      def provision_security_group!(servers, security_group_hash)
+        return unless servers.respond_to?(:map)
 
-      regions = servers.map(&:region).uniq.sort
-      regions.each do |r|
-        KnifeNitrous::SecurityGroup.from_hash(security_group_hash).provision(r)
+        regions = servers.map(&:region).uniq.sort
+        regions.each do |r|
+          KnifeNitrous::SecurityGroups.from_hash(security_group_hash).to_a.each do |sg|
+            sg.provision(r)
+          end
+        end
       end
-    end
 
       def bootstrap_chef_for_node(server)
-        bootstrap = Chef::Knife::Bootstrap.new
+        bootstrap = bootstrap_class.new
         bootstrap.name_args = [server.aws_dns_name]
-        bootstrap.config[:run_list] = "recipe[#{server.cookbook}]"
+        bootstrap.config[:run_list] = server.run_list
         bootstrap.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         bootstrap.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
-        bootstrap.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"
+        bootstrap.config[:identity_file] = "#{ENV['HOME']}/.ec2/#{server.region}-keypair.pem"
 
         bootstrap.config[:chef_node_name] = server.hostname
         bootstrap.config[:first_boot_attributes] = server.attributes || {}
 
         bootstrap.config[:distro] = "chef-full"
         bootstrap.config[:use_sudo] = true
+
+        bootstrap.config[:host_key_verify] = false if solo_bootstrap?
+
+        # Do some cleanup before we proceed:
+        clean_node_directory if solo_bootstrap?
 
         # Modify global configuration state to ensure hint gets set by
         # knife-bootstrap
@@ -59,15 +69,29 @@ class Chef
       end
 
       def chef_runner_for_node(server, timestamp)
-        ssh = Chef::Knife::Ssh.new
+        ssh = solo_bootstrap? ? Chef::Knife::SoloCook.new : Chef::Knife::Ssh.new
         ssh.ui = ui
 
         att_file_name = attributes_file_name(server.type, timestamp)
 
-        ssh.name_args = [ server.aws_dns_name, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
+        clean_node_directory if solo_bootstrap?
+
+        ssh.name_args = if solo_bootstrap?
+                          [ server.hostname ]
+                        else
+                          [ server.aws_dns_name, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
+                        end
+
+        if solo_bootstrap?
+          ssh.config[:run_list] = server.run_list
+          ssh.config[:json_attributes] = server.attributes
+          ssh.config[:host_key_verify] = false
+          ssh.config[:chef_node_name] = server.hostname
+        end
+
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
-        ssh.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"
+        ssh.config[:identity_file] = "#{ENV['HOME']}/.ec2/#{server.region}-keypair.pem"
         ssh.config[:manual] = true
         ssh.config[:on_error] = :raise
 
@@ -86,11 +110,23 @@ class Chef
         ssh.name_args = [ server.hostname, command ]
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
-        ssh.config[:identity_file] = "~/.ec2/#{server.region}-keypair.pem"
+        ssh.config[:identity_file] = "#{ENV['HOME']}/.ec2/#{server.region}-keypair.pem"
         ssh.config[:manual] = true
         ssh.config[:on_error] = :raise
 
         ssh
+      end
+
+      def bootstrap_class
+        solo_bootstrap? ? Chef::Knife::SoloBootstrap : Chef::Knife::Bootstrap
+      end
+
+      def solo_bootstrap?
+        config[:solo] || (config[:solo].nil? && Chef::Config[:knife][:solo])
+      end
+
+      def clean_node_directory
+        FileUtils.rm_rf(Dir.glob("#{Chef::Config[:node_path]}/*"))
       end
 
       protected

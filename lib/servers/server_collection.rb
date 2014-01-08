@@ -15,39 +15,59 @@ module KnifeNitrous
       @servers.push server
     end
 
+    def map(&block) ; @servers.map { |s| yield(s) }; end
+
     def each(&block); @servers.each { |s| yield(s) }; end
 
     def size; @servers.size; end
 
     def to_a; @servers; end
 
-    def self.parse
-      config_file = 'nitrous.json'
-      parsed_json = nil
+    def self.parse(config_file, security_group_directory)
+      parsed_yaml = nil
 
       return nil if !File.exists? config_file
 
       begin
-        parsed_json = JSON.parse(File.read(config_file))
-      rescue JSON::ParserError
-        p "Invalid JSON. Check your nitrous.json file."
+        parsed_yaml = YAML.load(File.read(config_file))
+      rescue Psych::SyntaxError
+        p "Invalid YAML. Check your #{config_file} file."
         return nil
       end
 
-      server_collection = self.new(parsed_json['type'],
-                                   parsed_json['security_group'].merge!('name' => parsed_json['type']))
+      # Load in security groups from the specified directory.
+      security_groups = {}
+      Dir.glob("#{security_group_directory}/**/*").each do |file|
+        begin
+          yaml = YAML.load(File.read(file))
+          security_groups.merge!(yaml)
+        rescue Psych::SyntaxError
+          p "Invalid YAML. Check your #{file} file."
+          return nil
+        end
+      end
 
-      parsed_json['servers'].each do |server_config|
-        if parsed_json["servers_common"]
-          server_config = deep_merge parsed_json["servers_common"], server_config
+      # Filter out security groups that are not specified in the
+      # server YAML file.
+      security_groups = security_groups.select do |x|
+        parsed_yaml['security_groups'].include?(x)
+      end
+
+      server_collection = self.new(parsed_yaml['type'],
+                                   security_groups)
+
+      parsed_yaml['servers'].each do |server_config|
+        if parsed_yaml["servers_common"]
+          server_config = deep_merge parsed_yaml["servers_common"], server_config
         end
         server = KnifeNitrous::Server.new(hostname: server_config['hostname'],
                                           size: server_config['size'],
                                           ami: server_config['ami'],
                                           region: server_config['region'],
-                                          type: parsed_json['type'],
+                                          type: parsed_yaml['type'],
                                           attributes: server_config['attributes'],
-                                          cookbook: parsed_json['cookbook'],
+                                          security_groups: security_groups.keys,
+                                          run_list: parsed_yaml['run_list'],
                                           availability_zone: server_config['availability_zone'])
 
         server.block_devices = KnifeNitrous::BlockDeviceCollection.new(server_config['block_devices'])

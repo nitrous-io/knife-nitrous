@@ -19,6 +19,11 @@ module KnifeNitrous
       self.rules.eql?(group.rules)
     end
 
+    def ==(group)
+      self.name == group.name &&
+      self.rules == group.rules
+    end
+
     def hash
       [self.name, self.rules].hash
     end
@@ -29,6 +34,7 @@ module KnifeNitrous
       security_group = compute.security_groups.get(self.name) ||
                        compute.security_groups.create(name: self.name,
                                                       description: self.name).reload
+
       security_group.sync(@rules)
     end
 
@@ -37,8 +43,9 @@ module KnifeNitrous
     end
 
     def self.from_hash(hash)
-      security_group = KnifeNitrous::SecurityGroup.new(hash['name'])
-      hash['rules'].each { |r| security_group.add_rule KnifeNitrous::SecurityRule.parse(r) }
+      name = hash.keys.first
+      security_group = KnifeNitrous::SecurityGroup.new(name)
+      hash[name]['rules'].each { |r| security_group.add_rule KnifeNitrous::SecurityRule.parse(r) }
       security_group
     end
   end

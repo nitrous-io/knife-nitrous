@@ -180,13 +180,14 @@ describe KnifeNitrous::SecurityGroup do
   describe ".from_hash" do
     let!(:hash) do
       {
-        "name" => "root-www",
-        "rules" => [
-          "80 tcp 0.0.0.0/0",
-          "443 tcp 0.0.0.0/0",
-          "65100 tcp 0.0.0.0/0",
-          "3000-9000 udp 0.0.0.0/0"
-        ]
+        "web" => {
+          "rules" => [
+            "80 tcp 0.0.0.0/0",
+            "443 tcp 0.0.0.0/0",
+            "65100 tcp 0.0.0.0/0",
+            "3000-9000 udp 0.0.0.0/0"
+          ]
+        }
       }
     end
 
@@ -194,7 +195,7 @@ describe KnifeNitrous::SecurityGroup do
       security_group = KnifeNitrous::SecurityGroup.from_hash(hash)
 
       security_group.class.should == KnifeNitrous::SecurityGroup
-      security_group.name.should == 'root-www'
+      security_group.name.should == 'web'
       security_group.rules.size.should == 4
 
       rules = security_group.rules

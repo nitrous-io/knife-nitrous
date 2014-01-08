@@ -3,18 +3,35 @@ require 'spec_helper'
 require 'chef/knife/bootstrap'
 
 describe KnifeNitrous::NitrousCreate do
-  let!(:config_file)    { 'nitrous.json' }
+  let!(:config_file)    { 'test.yml' }
+  let!(:sg_directory)   { 'security_groups' }
 
   before do
     @knife_nitrous_create = KnifeNitrous::NitrousCreate.new
-    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server.json"))
+    config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml"))
+
+    sg_directives = {}
+
+    Dir.glob("#{File.join(Knife::Nitrous::ROOT, 'spec', 'fixtures', 'security_groups')}/**/*").each do |file|
+      sg_directives.merge!({ File.basename(file) => File.read(file) })
+    end
+
     FakeFS.activate!
 
     FileUtils.rm_rf(config_file) if File.exists?(config_file)
     File.open(config_file, 'w') { |f| f.puts config }
+    FileUtils.rm_rf(sg_directory) if File.exists?(sg_directory)
+    FileUtils.mkdir(sg_directory)
+    sg_directives.each do |sg_file, opts|
+      File.open("#{sg_directory}/#{sg_file}", 'w') { |f| f.puts opts }
+    end
+
+    @knife_nitrous_create.config[:yaml_file] = config_file
+    @knife_nitrous_create.config[:sg_directory] = sg_directory
+
     setup_aws_credentials!
 
-    @server_collection = KnifeNitrous::ServerCollection.parse
+    @server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
     KnifeNitrous::ServerCollection.stub!(:parse) { @server_collection }
 
     @server_collection.stub!(:provision_security_group!) { true }
@@ -86,11 +103,11 @@ describe KnifeNitrous::NitrousCreate do
     end
 
     it "should set the identify_file to be the default key which includes the region" do
-      @bootstrap.config[:identity_file].should == "~/.ec2/#{@server.region}-keypair.pem"
+      @bootstrap.config[:identity_file].should == "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
-    it "should set the run list to be the server's type" do
-      @bootstrap.config[:run_list].should == "recipe[#{@server.cookbook}]"
+    it "should set the run list to be the server's run_list" do
+      @bootstrap.config[:run_list].should == @server.run_list
     end
 
     it "should set the chef node name to be the server's hostname" do
