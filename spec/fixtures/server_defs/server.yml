@@ -3,6 +3,7 @@ run_list: [ "recipe[root-www_cookbook]" ]
 security_groups:
   - web
   - ssh
+iam_role: foobar_role
 servers:
 - hostname: nitrous.io
   elb: true

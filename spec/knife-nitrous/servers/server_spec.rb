@@ -29,6 +29,7 @@ describe KnifeNitrous::Server do
                              environment: 'development',
                              size: 'm1.small',
                              ami: 'ami-deadbeef',
+                             iam_role: 'deadbeef_role',
                              run_list: ['recipe[example_cookbook]'],
                              security_groups: ['example-security-group'])
   end
@@ -67,6 +68,7 @@ describe KnifeNitrous::Server do
           @server.hostname.should == 'example.action.io'
           @server.type.should == 'example'
           @server.run_list.should == []
+          @server.iam_role.should == nil
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
@@ -88,6 +90,7 @@ describe KnifeNitrous::Server do
                                              type: 'example',
                                              region: 'ap-southeast-1',
                                              environment: 'development',
+                                             iam_role: 'deadbeef_role',
                                              size: 'm1.small',
                                              ami: 'ami-deadbeef',
                                              run_list: ['recipe[example_cookbook]'])
@@ -95,6 +98,7 @@ describe KnifeNitrous::Server do
           @server.hostname.should == 'example.action.io'
           @server.type.should == 'example'
           @server.run_list.should == ['recipe[example_cookbook]']
+          @server.iam_role.should == 'deadbeef_role'
           @server.region.should == 'ap-southeast-1'
           @server.environment.should == 'development'
           @server.size.should == 'm1.small'
