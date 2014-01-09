@@ -66,6 +66,7 @@ module KnifeNitrous
                                           region: server_config['region'],
                                           type: parsed_yaml['type'],
                                           attributes: server_config['attributes'],
+                                          iam_role: parsed_yaml['iam_role'],
                                           security_groups: security_groups.keys,
                                           run_list: parsed_yaml['run_list'],
                                           availability_zone: server_config['availability_zone'])
