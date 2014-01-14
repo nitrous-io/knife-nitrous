@@ -78,9 +78,13 @@ module KnifeNitrous
           run_list = config[:override_runlist].present? ? "[#{config[:override_runlist]}] (overridden)" : s.run_list
           announce("Provisioning started on #{s.hostname} with run list: #{run_list}")
 
-          chef_runner.run
+          begin
+            chef_runner.run
+          rescue => e
+            announce("Provisioning failed on #{s.hostname} with run list: #{run_list}", level: :error)
+            raise e
+          end
 
-          # TODO We should try to report failures, but Knife::Ssh#run calls Kernel#exit  (╯°□°）╯︵ ┻━┻
           announce("Provisioning completed on #{s.hostname} with run list: #{run_list}", level: :success)
         else
           announce("Provisioning skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
