@@ -69,11 +69,11 @@ module KnifeNitrous
         solo_conf[:override_runlist] = config[:override_runlist]
       end
       servers_to_provision.each_with_index do |s, i|
-        puts "===> " + ui.color("Server ##{i}: #{s.hostname}", :green)
+        puts "===> " + ui.color("Server ##{i+1} of #{servers_to_provision.count}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
 
         if s.cloud_state == 'running'
-          puts "===> " + ui.color("Provisioning server: #{s.hostname}", :magenta)
+          puts "===> " + ui.color("Provisioning server: #{s.hostname}, run list: #{s.run_list}", :magenta)
 
           s.setup_volumes
 
