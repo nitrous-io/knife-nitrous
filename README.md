@@ -23,9 +23,11 @@ Replace `x.y.z` with whatever version is specified in
     knife nitrous create
     knife nitrous provision (options)
 
-## Setup
+## Authenticating with AWS
 
-1. Create a `~/.chef/aws.json` JSON file with contents:
+knife-nitrous requires AWS security credentials. Place them in a
+`~/.chef/aws.json` JSON file with contents:
+
 ```
 {
   "access_key": "AWS access key ID",
@@ -39,7 +41,7 @@ knife-nitrous will look for config files in the following locations, in
 ascending order of precedence:
 
 * `~/.chef/nitrous.yml`
-& `./nitrous.yml` (i.e. same directory where you run `knife nitrous`)
+* `./nitrous.yml` (i.e. same directory where you run `knife nitrous`)
 
 For example, a local `nitrous.yml` will override any settings in the
 `~/.chef/nitrous.yml` file.
