@@ -68,7 +68,7 @@ class Chef
         bootstrap
       end
 
-      def chef_runner_for_node(server, timestamp)
+      def chef_runner_for_node(server, timestamp, solo_conf={})
         ssh = solo_bootstrap? ? Chef::Knife::SoloCook.new : Chef::Knife::Ssh.new
         ssh.ui = ui
 
@@ -87,6 +87,7 @@ class Chef
           ssh.config[:json_attributes] = server.attributes
           ssh.config[:host_key_verify] = false
           ssh.config[:chef_node_name] = server.hostname
+          ssh.config[:override_runlist] = solo_conf[:override_runlist] if solo_conf[:override_runlist]
         end
 
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER

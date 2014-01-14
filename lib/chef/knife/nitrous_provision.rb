@@ -30,6 +30,11 @@ module KnifeNitrous
       :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
       :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
+    option :override_runlist,
+      :short       => '-o RunlistItem,RunlistItem...,',
+      :long        => '--override-runlist',
+      :description => 'Replace current run list with specified items'
+
     attr_reader :name, :server_collection
 
     def run
@@ -59,6 +64,10 @@ module KnifeNitrous
 
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
 
+      solo_conf = {}
+      if config[:override_runlist].present?
+        solo_conf[:override_runlist] = config[:override_runlist]
+      end
       servers_to_provision.each_with_index do |s, i|
         puts "===> " + ui.color("Server ##{i}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
@@ -69,7 +78,7 @@ module KnifeNitrous
           s.setup_volumes
 
           chef_attributes_loader_for_node(s, timestamp).run
-          chef_runner_for_node(s, timestamp).run
+          chef_runner_for_node(s, timestamp, solo_conf).run
         else
           puts "===> " + ui.color("Skipping server: #{s.hostname}, state: #{s.cloud_state}", :red)
         end
