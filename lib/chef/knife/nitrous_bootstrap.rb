@@ -27,9 +27,9 @@ module KnifeNitrous
       description: "The host you want to run chef in"
 
     option :solo,
-      :long        => '--[no-]solo',
-      :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
-      :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
+      long: '--[no-]solo',
+      description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
+      proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
     attr_reader :name, :server_collection
 
@@ -45,17 +45,12 @@ module KnifeNitrous
       end
 
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
-      server_array = @server_collection.to_a
-      servers_to_provision = server_array
+      servers_to_provision = @server_collection.to_a
 
       if config[:region].present?
-        servers_to_provision = server_array.select do |s|
-          config[:region].include?(s.region)
-        end
+        servers_to_provision.select! { |s| config[:region].include?(s.region) }
       elsif config[:hostname]
-        servers_to_provision = server_array.select do |s|
-          config[:hostname] == s.hostname
-        end
+        servers_to_provision.select! { |s| config[:hostname] == s.hostname }
       end
 
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
@@ -71,5 +66,3 @@ module KnifeNitrous
 
   end
 end
-
-

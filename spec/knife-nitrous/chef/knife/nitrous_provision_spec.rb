@@ -27,8 +27,6 @@ describe KnifeNitrous::NitrousProvision do
       File.open("#{sg_directory}/#{sg_file}", 'w') { |f| f.puts opts }
     end
 
-    #@knife_nitrous_provision.parse_options(["-F", config_file, "-S", sg_directory])
-
     @knife_nitrous_provision.config[:yaml_file] = config_file
     @knife_nitrous_provision.config[:sg_directory] = sg_directory
 

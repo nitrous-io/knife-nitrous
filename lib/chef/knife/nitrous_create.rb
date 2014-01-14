@@ -17,9 +17,9 @@ module KnifeNitrous
       description: "Directory containing security groups in YAML format."
 
     option :solo,
-      :long        => '--[no-]solo',
-      :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
-      :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
+      long: '--[no-]solo',
+      description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
+      proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
     attr_reader :name, :server_collection
 
@@ -51,4 +51,3 @@ module KnifeNitrous
     end
   end
 end
-
