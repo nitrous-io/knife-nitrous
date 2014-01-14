@@ -80,10 +80,10 @@ class Chef
         clean_node_directory if solo_bootstrap?
 
         ssh.name_args = if solo_bootstrap?
-                          [ server.hostname ]
-                        else
-                          [ server.aws_dns_name, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
-                        end
+          [ server.hostname ]
+        else
+          [ server.aws_dns_name, "sudo chef-client -c /etc/chef/client.rb -j #{att_file_name}" ]
+        end
 
         if solo_bootstrap?
           ssh.config[:run_list] = server.run_list

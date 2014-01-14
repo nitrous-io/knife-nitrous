@@ -55,11 +55,16 @@ module KnifeNitrous
 
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
 
+      announce("#{ENV['USER']} is bootstrapping #{servers_to_provision.count} server(s): #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each do |s|
         if s.cloud_state == 'running'
           s.setup_volumes
 
+          announce("Bootstrap started on #{s.hostname}")
           bootstrap_chef_for_node(s).run
+          announce("Bootstrap completed on #{s.hostname}", level: :success)
+        else
+          announce("Bootstrap skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end

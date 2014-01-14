@@ -34,7 +34,6 @@ module KnifeNitrous
         exit 1
       end
 
-      puts "===> " + ui.color("Parsing ServerCollection from #{config[:yaml_file]} and security group directory #{config[:sg_directory]}", :magenta)
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
 
       puts "===> " + ui.color("Provisioning Security Groups")
