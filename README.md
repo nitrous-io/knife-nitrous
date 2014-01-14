@@ -32,3 +32,27 @@ Replace `x.y.z` with whatever version is specified in
   "secret_key": "AWS secret access key"
 }
 ```
+
+## Configuring knife-nitrous
+
+knife-nitrous will look for config files in the following locations, in
+ascending order of precedence:
+
+* `~/.chef/nitrous.yml`
+& `./nitrous.yml` (i.e. same directory where you run `knife nitrous`)
+
+For example, a local `nitrous.yml` will override any settings in the
+`~/.chef/nitrous.yml` file.
+
+## HipChat integration
+
+Notifications can be sent to a HipChat room and can be configured via the
+`nitrous.yml` file(s).
+
+```
+---
+hipchat:
+  enabled: true
+  key: replace-me # API key. Get one from https://hipchat.com/account/api or ask your HipChat admin.
+  room: 1234 # HipChat room ID.
+```

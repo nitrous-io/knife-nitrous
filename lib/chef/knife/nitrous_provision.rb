@@ -64,19 +64,26 @@ module KnifeNitrous
         solo_conf[:override_runlist] = config[:override_runlist]
       end
 
+      announce("#{ENV['USER']} is provisioning #{servers_to_provision.count} server(s): #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each_with_index do |s, i|
         puts "===> " + ui.color("Server ##{i+1} of #{servers_to_provision.count}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
 
         if s.cloud_state == 'running'
-          puts "===> " + ui.color("Provisioning server: #{s.hostname}", :magenta)
-
           s.setup_volumes
 
           chef_attributes_loader_for_node(s, timestamp).run
-          chef_runner_for_node(s, timestamp, solo_conf).run
+          chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
+
+          run_list = config[:override_runlist].present? ? "[#{config[:override_runlist]}] (overridden)" : s.run_list
+          announce("Provisioning started on #{s.hostname} with run list: #{run_list}")
+
+          chef_runner.run
+
+          # TODO We should try to report failures, but Knife::Ssh#run calls Kernel#exit  (╯°□°）╯︵ ┻━┻
+          announce("Provisioning completed on #{s.hostname} with run list: #{run_list}", level: :success)
         else
-          puts "===> " + ui.color("Skipping server: #{s.hostname}, state: #{s.cloud_state}", :red)
+          announce("Provisioning skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end

@@ -1,3 +1,6 @@
+require 'app_conf'
+require 'hipchat'
+
 class Chef
   class Knife
     module NitrousBase
@@ -130,9 +133,58 @@ class Chef
         FileUtils.rm_rf(Dir.glob("#{Chef::Config[:node_path]}/*"))
       end
 
+      def nitrous_config
+        return @nitrous_config if @nitrous_config
+
+        @nitrous_config = AppConf.new
+        load_paths = [File.expand_path('~/.chef/nitrous.yml'), File.expand_path('./nitrous.yml')]
+        load_paths.each do |load_path|
+          if File.exists?(load_path)
+            @nitrous_config.load(load_path)
+          end
+        end
+
+        @nitrous_config
+      end
+
       protected
       def attributes_file_name(name, timestamp)
         File.join("/", "tmp", "#{name}-#{timestamp}.json")
+      end
+
+      # An "instance-global" identifier for a single run of a knife subcommand.
+      def run_id
+        @run_id ||= "#{ENV['USER']}@#{Time.now.utc.strftime('%d-%b-%Y-%H-%M')}"
+      end
+
+      def announce(message, level: level)
+        term_color, hipchat_color = case level
+        when :error, :warn
+          [:red, 'red']
+        when :success
+          [:green, 'green']
+        when :info
+          [:magenta, 'yellow']
+        else
+          [:magenta, 'yellow']
+        end
+
+        puts "===> #{ui.color(message, term_color)}"
+        if hipchat_enabled?
+          hipchat_room.send('knife-nitrous', "#{message} - ##{run_id}", color: hipchat_color, message_format: 'text')
+        end
+      end
+
+      def hipchat_enabled?
+        nitrous_config.hipchat && nitrous_config.hipchat[:enabled]
+      end
+
+      def hipchat_client
+        @hipchat_client ||= HipChat::Client.new(nitrous_config.hipchat[:key], api_version: 'v1')
+      end
+
+      def hipchat_room
+        @hipchat_room ||= hipchat_client[nitrous_config.hipchat[:room]]
       end
     end
   end

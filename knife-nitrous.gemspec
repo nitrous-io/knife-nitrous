@@ -19,6 +19,8 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency  "knife-solo",           "~> 0.4.0"
   gem.add_dependency  "knife-solo_data_bag",  "~> 0.4.0"
+  gem.add_dependency  "hipchat",              "~> 1.0.1"
+  gem.add_dependency  "app_conf",             "~> 0.4.2"
 
   gem.add_development_dependency  "chef",     "~> 11.6.0"
   gem.add_development_dependency  "rspec",    "~> 2.12.0"
