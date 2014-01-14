@@ -32,9 +32,3 @@ Replace `x.y.z` with whatever version is specified in
   "secret_key": "AWS secret access key"
 }
 ```
-1. Create a `nitrous.json` file where you declare how you want your EC2
-instances will look like. knife-nitrous will magically provision your instances
-according to your `nitrous.json` file. Some examples:
-  1. [Coach's nitrous.json](https://github.com/action-io/coach-cookbook/blob/master/nitrous.json)
-  1. [Boxhost's nitrous.json](https://github.com/action-io/boxhost_cookbook/blob/master/nitrous.json)
-  1. [Rainbow's nitrous.json](https://github.com/action-io/rainbow-cookbook/blob/master/nitrous.json)
