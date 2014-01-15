@@ -27,9 +27,9 @@ module KnifeNitrous
       description: "The host you want to run chef in"
 
     option :solo,
-      :long        => '--[no-]solo',
-      :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
-      :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
+      long: '--[no-]solo',
+      description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
+      proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
     attr_reader :name, :server_collection
 
@@ -45,31 +45,29 @@ module KnifeNitrous
       end
 
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
-      server_array = @server_collection.to_a
-      servers_to_provision = server_array
+      servers_to_provision = @server_collection.to_a
 
       if config[:region].present?
-        servers_to_provision = server_array.select do |s|
-          config[:region].include?(s.region)
-        end
+        servers_to_provision.select! { |s| config[:region].include?(s.region) }
       elsif config[:hostname]
-        servers_to_provision = server_array.select do |s|
-          config[:hostname] == s.hostname
-        end
+        servers_to_provision.select! { |s| config[:hostname] == s.hostname }
       end
 
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
 
+      announce("#{ENV['USER']} is bootstrapping #{servers_to_provision.count} server(s): #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each do |s|
         if s.cloud_state == 'running'
           s.setup_volumes
 
+          announce("Bootstrap started on #{s.hostname}")
           bootstrap_chef_for_node(s).run
+          announce("Bootstrap completed on #{s.hostname}", level: :success)
+        else
+          announce("Bootstrap skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end
 
   end
 end
-
-

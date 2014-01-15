@@ -1,12 +1,10 @@
 module KnifeNitrous
   class ServerCollection
-
     attr_accessor :current_region, :environment
     attr_reader   :regions, :security_group_hash, :type
 
     def initialize(type, security_group_hash)
       @servers, @regions = [], []
-
       @type = type
       @security_group_hash = security_group_hash
     end
@@ -24,9 +22,9 @@ module KnifeNitrous
     def to_a; @servers; end
 
     def self.parse(config_file, security_group_directory)
-      parsed_yaml = nil
+      return nil unless File.exists? config_file
 
-      return nil if !File.exists? config_file
+      parsed_yaml = nil
 
       begin
         parsed_yaml = YAML.load(File.read(config_file))
@@ -53,8 +51,7 @@ module KnifeNitrous
         parsed_yaml['security_groups'].include?(x)
       end
 
-      server_collection = self.new(parsed_yaml['type'],
-                                   security_groups)
+      server_collection = self.new(parsed_yaml['type'], security_groups)
 
       parsed_yaml['servers'].each do |server_config|
         if parsed_yaml["servers_common"]

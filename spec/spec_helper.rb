@@ -10,7 +10,14 @@ require 'fakefs/spec_helpers'
 end
 
 RSpec.configure do |c|
-  c.before(:all) { Fog.mock! }
-  c.include      CloudHelpers
+  c.include CloudHelpers
+  c.before(:all) do
+    Fog.mock!
+
+    # Disable logging to console and HipChat.
+    module Chef::Knife::NitrousBase
+      def announce(message, level: level); end
+    end
+  end
 end
 

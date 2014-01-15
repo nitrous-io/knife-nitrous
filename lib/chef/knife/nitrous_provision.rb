@@ -25,15 +25,15 @@ module KnifeNitrous
       long: "--sg_yaml DIRECTORY",
       description: "Directory containing security groups in YAML format."
 
-    option :solo,
-      :long        => '--[no-]solo',
-      :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
-      :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
-
     option :override_runlist,
-      :short       => '-o RunlistItem,RunlistItem...,',
-      :long        => '--override-runlist',
-      :description => 'Replace current run list with specified items'
+      short: '-o RunlistItem,RunlistItem...,',
+      long: '--override-runlist',
+      description: 'Replace current run list with specified items'
+
+    option :solo,
+      long: '--[no-]solo',
+      description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
+      proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
     attr_reader :name, :server_collection
 
@@ -49,17 +49,12 @@ module KnifeNitrous
       end
 
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
-      server_array = @server_collection.to_a
-      servers_to_provision = server_array
+      servers_to_provision = @server_collection.to_a
 
       if config[:region].present?
-        servers_to_provision = server_array.select do |s|
-          config[:region].include?(s.region)
-        end
+        servers_to_provision.select! { |s| config[:region].include?(s.region) }
       elsif config[:hostname]
-        servers_to_provision = server_array.select do |s|
-          config[:hostname] == s.hostname
-        end
+        servers_to_provision.select! { |s| config[:hostname] == s.hostname }
       end
 
       self.provision_security_group! servers_to_provision, server_collection.security_group_hash
@@ -68,23 +63,34 @@ module KnifeNitrous
       if config[:override_runlist].present?
         solo_conf[:override_runlist] = config[:override_runlist]
       end
+
+      announce("#{ENV['USER']} is provisioning #{servers_to_provision.count} server(s): #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each_with_index do |s, i|
         puts "===> " + ui.color("Server ##{i+1} of #{servers_to_provision.count}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
 
         if s.cloud_state == 'running'
-          puts "===> " + ui.color("Provisioning server: #{s.hostname}, run list: #{s.run_list}", :magenta)
-
           s.setup_volumes
 
           chef_attributes_loader_for_node(s, timestamp).run
-          chef_runner_for_node(s, timestamp, solo_conf).run
+          chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
+
+          run_list = config[:override_runlist].present? ? "[#{config[:override_runlist]}] (overridden)" : s.run_list
+          announce("Provisioning started on #{s.hostname} with run list: #{run_list}")
+
+          begin
+            chef_runner.run
+          rescue => e
+            announce("Provisioning failed on #{s.hostname} with run list: #{run_list}", level: :error)
+            raise e
+          end
+
+          announce("Provisioning completed on #{s.hostname} with run list: #{run_list}", level: :success)
         else
-          puts "===> " + ui.color("Skipping server: #{s.hostname}, state: #{s.cloud_state}", :red)
+          announce("Provisioning skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end
 
   end
 end
-

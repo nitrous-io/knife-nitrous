@@ -23,18 +23,38 @@ Replace `x.y.z` with whatever version is specified in
     knife nitrous create
     knife nitrous provision (options)
 
-## Setup
+## Authenticating with AWS
 
-1. Create a `~/.chef/aws.json` JSON file with contents:
+knife-nitrous requires AWS security credentials. Place them in a
+`~/.chef/aws.json` JSON file with contents:
+
 ```
 {
   "access_key": "AWS access key ID",
   "secret_key": "AWS secret access key"
 }
 ```
-1. Create a `nitrous.json` file where you declare how you want your EC2
-instances will look like. knife-nitrous will magically provision your instances
-according to your `nitrous.json` file. Some examples:
-  1. [Coach's nitrous.json](https://github.com/action-io/coach-cookbook/blob/master/nitrous.json)
-  1. [Boxhost's nitrous.json](https://github.com/action-io/boxhost_cookbook/blob/master/nitrous.json)
-  1. [Rainbow's nitrous.json](https://github.com/action-io/rainbow-cookbook/blob/master/nitrous.json)
+
+## Configuring knife-nitrous
+
+knife-nitrous will look for config files in the following locations, in
+ascending order of precedence:
+
+* `~/.chef/nitrous.yml`
+* `./nitrous.yml` (i.e. same directory where you run `knife nitrous`)
+
+For example, a local `nitrous.yml` will override any settings in the
+`~/.chef/nitrous.yml` file.
+
+## HipChat integration
+
+Notifications can be sent to a HipChat room and can be configured via the
+`nitrous.yml` file(s).
+
+```
+---
+hipchat:
+  enabled: true
+  key: replace-me # API key. Get one from https://hipchat.com/account/api or ask your HipChat admin.
+  room: 1234 # HipChat room ID.
+```

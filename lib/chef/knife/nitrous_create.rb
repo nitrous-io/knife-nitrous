@@ -17,9 +17,9 @@ module KnifeNitrous
       description: "Directory containing security groups in YAML format."
 
     option :solo,
-      :long        => '--[no-]solo',
-      :description => 'Do a chef-solo bootstrap on the droplet using knife-solo',
-      :proc        => Proc.new { |s| Chef::Config[:knife][:solo] = s }
+      long: '--[no-]solo',
+      description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
+      proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
     attr_reader :name, :server_collection
 
@@ -34,7 +34,6 @@ module KnifeNitrous
         exit 1
       end
 
-      puts "===> " + ui.color("Parsing ServerCollection from #{config[:yaml_file]} and security group directory #{config[:sg_directory]}", :magenta)
       @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
 
       puts "===> " + ui.color("Provisioning Security Groups")
@@ -51,4 +50,3 @@ module KnifeNitrous
     end
   end
 end
-
