@@ -157,7 +157,7 @@ class Chef
         @run_id ||= "#{ENV['USER']}@#{Time.now.utc.strftime('%d-%b-%Y-%H-%M')}"
       end
 
-      def announce(message, level: level)
+      def announce(message, level: :info)
         term_color, hipchat_color = case level
         when :error, :warn
           [:red, 'red']
