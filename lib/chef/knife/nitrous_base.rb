@@ -130,7 +130,12 @@ class Chef
       end
 
       def clean_node_directory
-        FileUtils.rm_rf(Dir.glob("#{Chef::Config[:node_path]}/*"))
+        if Chef::Config[:node_path].nil?
+          puts "node_path is not set - please set this to 'nodes' in your knife.rb file."
+          return true
+        else
+          FileUtils.rm(Dir.glob("#{Chef::Config[:node_path]}/*.json"))
+        end
       end
 
       def nitrous_config
