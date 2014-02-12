@@ -64,7 +64,7 @@ module KnifeNitrous
         solo_conf[:override_runlist] = config[:override_runlist]
       end
 
-      announce("#{ENV['USER']} is provisioning #{servers_to_provision.count} server(s): #{servers_to_provision.map(&:hostname).join(',')}")
+      announce("#{ENV['USER']} is provisioning: #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each_with_index do |s, i|
         puts "===> " + ui.color("Server ##{i+1} of #{servers_to_provision.count}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
@@ -76,18 +76,17 @@ module KnifeNitrous
           chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
 
           run_list = config[:override_runlist].present? ? "[#{config[:override_runlist]}] (overridden)" : s.run_list
-          announce("Provisioning started on #{s.hostname} with run list: #{run_list}")
 
           begin
             chef_runner.run
           rescue => e
-            announce("Provisioning failed on #{s.hostname} with run list: #{run_list}", level: :error)
+            announce("Failed provisioning on #{s.hostname}. Run list: #{run_list}", level: :error)
             raise e
           end
 
-          announce("Provisioning completed on #{s.hostname} with run list: #{run_list}", level: :success)
+          announce("Completed provisioning on #{s.hostname}. Run list: #{run_list}", level: :success)
         else
-          announce("Provisioning skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
+          announce("Skipped provisioning on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end

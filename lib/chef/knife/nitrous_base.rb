@@ -176,7 +176,15 @@ class Chef
 
         puts "===> #{ui.color(message, term_color)}"
         if hipchat_enabled?
-          hipchat_room.send('knife-nitrous', "#{message} - ##{run_id}", color: hipchat_color, message_format: 'text')
+          token = case level
+          when :error, :warn
+            '(ಠ_ಠ)'
+          when :success
+            '✌(-‿-)✌'
+          else
+            '(⌐■_■)'
+          end
+          hipchat_room.send('knife-nitrous', "#{message} #{token} #{run_id}", color: hipchat_color, message_format: 'text')
         end
       end
 
