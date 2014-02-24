@@ -184,7 +184,7 @@ class Chef
           else
             '(⌐■_■)'
           end
-          hipchat_room.send('knife-nitrous', "#{message} #{token} #{run_id}", color: hipchat_color, message_format: 'text')
+          hipchat_room.send('knife-nitrous', "#{message} #{token}", color: hipchat_color, message_format: 'text')
         end
       end
 
