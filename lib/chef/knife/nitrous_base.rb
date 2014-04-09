@@ -129,6 +129,22 @@ class Chef
         config[:solo] || (config[:solo].nil? && Chef::Config[:knife][:solo])
       end
 
+      def data_bags
+        if Chef::Config[:data_bag_path].nil?
+          stderr.puts "data_bag_path is not set - please set this to 'data_bags' in your knife.rb file."
+          return false
+        end
+
+        db_path = Chef::Config[:data_bag_path]
+
+        if !File.directory?(db_path)
+          stderr.puts "data_bag_path is not a directory."
+          return []
+        end
+
+        Dir.glob("#{db_path}/**/*").select { |x| x.match /json/ }
+      end
+
       def clean_node_directory
         if Chef::Config[:node_path].nil?
           puts "node_path is not set - please set this to 'nodes' in your knife.rb file."
