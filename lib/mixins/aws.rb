@@ -15,6 +15,12 @@ module KnifeNitrous
                             aws_secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'])
     end
 
+    def storage
+      @storage ||= Fog::Storage.new(provider: 'AWS',
+                                    aws_access_key_id: ENV['AWS_ACCESS_KEY_ID'],
+                                    aws_secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'])
+    end
+
     def load_credentials!
       if File.exists?(CREDENTIALS_FILE)
         credentials = YAML.load(File.read(CREDENTIALS_FILE))
