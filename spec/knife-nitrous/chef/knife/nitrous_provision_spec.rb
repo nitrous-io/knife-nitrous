@@ -267,6 +267,8 @@ describe KnifeNitrous::NitrousProvision do
       @timestamp = Time.now.to_i
 
       @ssh = @knife_nitrous_provision.chef_runner_for_node(@server, @timestamp)
+      FileUtils.mkdir_p "#{ENV['HOME']}/.ec2/"
+      FileUtils.touch "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the name_args to include the server name and the chef-client command" do
@@ -300,6 +302,8 @@ describe KnifeNitrous::NitrousProvision do
       @timestamp = Time.now.to_i
 
       @ssh = @knife_nitrous_provision.chef_attributes_loader_for_node(@server, @timestamp)
+      FileUtils.mkdir_p "#{ENV['HOME']}/.ec2/"
+      FileUtils.touch "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the name_args to include the server name and the chef-client command" do
