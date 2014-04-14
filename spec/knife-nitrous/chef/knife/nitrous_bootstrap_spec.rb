@@ -220,6 +220,8 @@ describe KnifeNitrous::NitrousBootstrap do
       @server.stub!(:aws_dns_name) { 'fake.local' }
 
       @bootstrap = @knife_nitrous_bootstrap.bootstrap_chef_for_node(@server)
+      FileUtils.mkdir_p "#{ENV['HOME']}/.ec2/"
+      FileUtils.touch "#{ENV['HOME']}/.ec2/#{@server.region}-keypair.pem"
     end
 
     it "should set the server to connect to to it's AWS DNS name" do

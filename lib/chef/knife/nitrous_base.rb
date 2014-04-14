@@ -51,7 +51,7 @@ class Chef
         bootstrap.config[:run_list] = server.run_list
         bootstrap.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         bootstrap.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
-        bootstrap.config[:identity_file] = "#{ENV['HOME']}/.ec2/#{server.region}-keypair.pem"
+        bootstrap.config[:identity_file] = identity_file(server.region)
 
         bootstrap.config[:chef_node_name] = server.hostname
         bootstrap.config[:first_boot_attributes] = server.attributes || {}
@@ -95,7 +95,7 @@ class Chef
 
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
-        ssh.config[:identity_file] = "#{ENV['HOME']}/.ec2/#{server.region}-keypair.pem"
+        ssh.config[:identity_file] = identity_file(server.region)
         ssh.config[:manual] = true
         ssh.config[:on_error] = :raise
 
@@ -114,7 +114,7 @@ class Chef
         ssh.name_args = [ server.hostname, command ]
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
         ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
-        ssh.config[:identity_file] = "#{ENV['HOME']}/.ec2/#{server.region}-keypair.pem"
+        ssh.config[:identity_file] = identity_file(server.region)
         ssh.config[:manual] = true
         ssh.config[:on_error] = :raise
 
@@ -198,6 +198,15 @@ class Chef
 
       def hipchat_room
         @hipchat_room ||= hipchat_client[nitrous_config.hipchat[:room]]
+      end
+
+      # get correct identity file. Here are where we will look for the new file
+      # - $HOME/.ec2/nitrous.pem
+      # - $HOME/.ec2/#{region}-keypair.pem
+      def identity_file(region=nil)
+        locations = ["#{ENV['HOME']}/.ec2/nitrous.pem"]
+        locations << "#{ENV['HOME']}/.ec2/#{region}-keypair.pem" if region
+        locations.find { |l| File.exists?(l) }
       end
     end
   end
