@@ -5,7 +5,7 @@ module KnifeNitrous
     attr_accessor :hostname, :type, :region, :environment,
                   :size, :ami, :block_devices, :attributes,
                   :run_list, :availability_zone, :security_groups,
-                  :iam_role
+                  :iam_role, :user_data
 
     attr_reader   :ssh_port, :ip
 
@@ -193,6 +193,7 @@ module KnifeNitrous
         image_id: self.ami,
         flavor_id: self.size,
         key_name: "#{self.region}-keypair",
+        user_data: user_data,
         availability_zone: self.availability_zone || "#{self.region}a",
         groups: self.security_groups,
         iam_instance_profile_name: self.iam_role,

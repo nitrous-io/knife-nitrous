@@ -5,10 +5,13 @@ require 'chef/knife/bootstrap'
 describe KnifeNitrous::NitrousCreate do
   let!(:config_file)    { 'test.yml' }
   let!(:sg_directory)   { 'security_groups' }
+  let!(:user_data_file) { 'user_data/init.txt' }
 
   before do
     @knife_nitrous_create = KnifeNitrous::NitrousCreate.new
+
     config = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "server_defs", "server.yml"))
+    user_data = File.read(File.join(Knife::Nitrous::ROOT, "spec", "fixtures", "user_data", "init.txt"))
 
     sg_directives = {}
 
@@ -26,8 +29,9 @@ describe KnifeNitrous::NitrousCreate do
       File.open("#{sg_directory}/#{sg_file}", 'w') { |f| f.puts opts }
     end
 
-    @knife_nitrous_create.config[:yaml_file] = config_file
-    @knife_nitrous_create.config[:sg_directory] = sg_directory
+    FileUtils.rm_rf(File.dirname(user_data_file)) if File.exists?(user_data_file)
+    FileUtils.mkdir(File.dirname(user_data_file))
+    File.open(user_data_file, 'w') { |f| f.puts(user_data) }
 
     setup_aws_credentials!
 
@@ -46,39 +50,126 @@ describe KnifeNitrous::NitrousCreate do
   describe "#run" do
     let!(:bootstrap) { double :bootstrap }
 
-    before do
-      bootstrap.stub!(:run)
-      @knife_nitrous_create.stub!(:bootstrap_chef_for_node) { bootstrap }
+    context "when all options are passed to KnifeNitrous::Create" do
+      before do
+        bootstrap.stub!(:run)
+        @knife_nitrous_create.config[:yaml_file] = config_file
+        @knife_nitrous_create.config[:sg_directory] = sg_directory
+        @knife_nitrous_create.config[:user_data] = user_data_file
+
+        @knife_nitrous_create.stub!(:bootstrap_chef_for_node) { bootstrap }
+      end
+
+      it "should parse the config file" do
+        KnifeNitrous::ServerCollection.should_receive(:parse).with(config_file, sg_directory, user_data: File.read(user_data_file)).and_return(@server_collection)
+        @knife_nitrous_create.run
+      end
+
+      it "should provision the security group for that type" do
+        @knife_nitrous_create.should_receive(:provision_security_group!).with(@server_collection, @server_collection.security_group_hash)
+        @knife_nitrous_create.run
+      end
+
+      it "should provision servers belonging to the server collection" do
+        @server_collection.to_a[0].should_receive(:provision)
+        @server_collection.to_a[1].should_receive(:provision)
+        @server_collection.to_a[2].should_receive(:provision)
+        @knife_nitrous_create.run
+      end
+
+      it "should bootstrap chef on each of the servers in the server collection" do
+        @knife_nitrous_create.should_receive(:bootstrap_chef_for_node).
+                              exactly(3).times.
+                              and_return(bootstrap)
+
+        @knife_nitrous_create.run
+      end
+
+      it "should run bootstrap on each of the servers in the server collection" do
+        bootstrap.should_receive(:run).exactly(3).times
+        @knife_nitrous_create.run
+      end
     end
 
-    it "should parse the config file" do
-      KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
-      @knife_nitrous_create.run
+    context "when the sg directory is present in the filesystem but is not passed to KnifeNitrous::Create as an option" do
+      before do
+        bootstrap.stub!(:run)
+        @knife_nitrous_create = KnifeNitrous::NitrousCreate.new
+        @knife_nitrous_create.config[:yaml_file] = config_file
+
+        @knife_nitrous_create.stub!(:bootstrap_chef_for_node) { bootstrap }
+      end
+
+      it "should parse the config file" do
+        "SG Directory: #{File.exists?(sg_directory)}"
+        KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_create.run
+      end
+
+      it "should provision the security group for that type" do
+        @knife_nitrous_create.should_receive(:provision_security_group!).with(@server_collection, @server_collection.security_group_hash)
+        @knife_nitrous_create.run
+      end
+
+      it "should provision servers belonging to the server collection" do
+        @server_collection.to_a[0].should_receive(:provision)
+        @server_collection.to_a[1].should_receive(:provision)
+        @server_collection.to_a[2].should_receive(:provision)
+        @knife_nitrous_create.run
+      end
+
+      it "should bootstrap chef on each of the servers in the server collection" do
+        @knife_nitrous_create.should_receive(:bootstrap_chef_for_node).
+                              exactly(3).times.
+                              and_return(bootstrap)
+
+        @knife_nitrous_create.run
+      end
+
+      it "should run bootstrap on each of the servers in the server collection" do
+        bootstrap.should_receive(:run).exactly(3).times
+        @knife_nitrous_create.run
+      end
     end
 
-    it "should provision the security group for that type" do
-      @knife_nitrous_create.should_receive(:provision_security_group!).with(@server_collection, @server_collection.security_group_hash)
-      @knife_nitrous_create.run
-    end
+    context "when the all the required options are present" do
+      before do
+        bootstrap.stub!(:run)
+        @knife_nitrous_create.config[:yaml_file] = config_file
+        @knife_nitrous_create.config[:sg_directory] = sg_directory
 
-    it "should provision servers belonging to the server collection" do
-      @server_collection.to_a[0].should_receive(:provision)
-      @server_collection.to_a[1].should_receive(:provision)
-      @server_collection.to_a[2].should_receive(:provision)
-      @knife_nitrous_create.run
-    end
+        @knife_nitrous_create.stub!(:bootstrap_chef_for_node) { bootstrap }
+      end
 
-    it "should bootstrap chef on each of the servers in the server collection" do
-      @knife_nitrous_create.should_receive(:bootstrap_chef_for_node).
-                            exactly(3).times.
-                            and_return(bootstrap)
+      it "should parse the config file" do
+        KnifeNitrous::ServerCollection.should_receive(:parse).and_return(@server_collection)
+        @knife_nitrous_create.run
+      end
 
-      @knife_nitrous_create.run
-    end
+      it "should provision the security group for that type" do
+        @knife_nitrous_create.should_receive(:provision_security_group!).with(@server_collection, @server_collection.security_group_hash)
+        @knife_nitrous_create.run
+      end
 
-    it "should run bootstrap on each of the servers in the server collection" do
-      bootstrap.should_receive(:run).exactly(3).times
-      @knife_nitrous_create.run
+      it "should provision servers belonging to the server collection" do
+        @server_collection.to_a[0].should_receive(:provision)
+        @server_collection.to_a[1].should_receive(:provision)
+        @server_collection.to_a[2].should_receive(:provision)
+        @knife_nitrous_create.run
+      end
+
+      it "should bootstrap chef on each of the servers in the server collection" do
+        @knife_nitrous_create.should_receive(:bootstrap_chef_for_node).
+                              exactly(3).times.
+                              and_return(bootstrap)
+
+        @knife_nitrous_create.run
+      end
+
+      it "should run bootstrap on each of the servers in the server collection" do
+        bootstrap.should_receive(:run).exactly(3).times
+        @knife_nitrous_create.run
+      end
     end
   end
 

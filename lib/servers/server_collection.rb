@@ -21,7 +21,7 @@ module KnifeNitrous
 
     def to_a; @servers; end
 
-    def self.parse(config_file, security_group_directory)
+    def self.parse(config_file, security_group_directory, opts = {})
       return nil unless File.exists? config_file
 
       parsed_yaml = nil
@@ -32,6 +32,8 @@ module KnifeNitrous
         p "Invalid YAML. Check your #{config_file} file."
         return nil
       end
+
+      user_data = opts[:user_data]
 
       # Load in security groups from the specified directory.
       security_groups = {}
@@ -68,6 +70,7 @@ module KnifeNitrous
                                           run_list: parsed_yaml['run_list'],
                                           availability_zone: server_config['availability_zone'])
 
+        server.user_data = user_data unless user_data.nil?
         server.block_devices = KnifeNitrous::BlockDeviceCollection.new(server_config['block_devices'])
 
         server_collection.add server

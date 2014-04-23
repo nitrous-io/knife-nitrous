@@ -75,13 +75,13 @@ describe KnifeNitrous::ServerCollection do
         end
 
         it "should return a server collection" do
-          server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
+          server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory, user_data: "/Users/mclovin/cloud-init/init.txt")
           server_collection.class.should == KnifeNitrous::ServerCollection
           server_collection.size.should == 3
         end
 
         it "should contain an array of KnifeNitrous::Server objects" do
-          server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory)
+          server_collection = KnifeNitrous::ServerCollection.parse(config_file, sg_directory, user_data: "/Users/mclovin/cloud-init/init.txt")
           servers = server_collection.to_a
 
           server_collection.type.should == 'root-www'
@@ -96,6 +96,7 @@ describe KnifeNitrous::ServerCollection do
           servers[0].run_list.should == ['recipe[root-www_cookbook]']
           servers[0].ami.should == 'ami-deadbeef'
           servers[0].attributes.should == { 'environment' => 'production', 'region' => 'us-east-1' }
+          servers[0].user_data.should == "/Users/mclovin/cloud-init/init.txt"
 
           servers[0].block_devices.to_a.should be_empty
 
@@ -107,6 +108,7 @@ describe KnifeNitrous::ServerCollection do
           servers[1].run_list.should == ['recipe[root-www_cookbook]']
           servers[1].ami.should == 'ami-deadbeef'
           servers[1].attributes.should == { 'environment' => 'production', 'region' => 'us-west-1' }
+          servers[1].user_data.should == "/Users/mclovin/cloud-init/init.txt"
 
           block_devices = servers[1].block_devices.to_a
           block_devices.size.should == 2
@@ -129,6 +131,7 @@ describe KnifeNitrous::ServerCollection do
           servers[2].region.should == 'us-west-1'
           servers[2].ami.should == 'ami-deadbeef'
           servers[2].attributes.should == { 'environment' => 'staging', 'region' => 'us-west-1' }
+          servers[2].user_data.should == "/Users/mclovin/cloud-init/init.txt"
 
           block_devices = servers[2].block_devices.to_a
           block_devices.size.should == 1
