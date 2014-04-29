@@ -31,7 +31,8 @@ describe KnifeNitrous::Server do
                              ami: 'ami-deadbeef',
                              iam_role: 'deadbeef_role',
                              run_list: ['recipe[example_cookbook]'],
-                             security_groups: ['example-security-group'])
+                             security_groups: ['example-security-group'],
+                             user_data: './cloud_init/init.txt')
   end
 
   before :all do
@@ -322,6 +323,7 @@ describe KnifeNitrous::Server do
           cloud_instance.availability_zone.should == "ap-southeast-1a"
           cloud_instance.key_name.should == "ap-southeast-1-keypair"
           cloud_instance.groups.should == ["example-security-group"]
+          cloud_instance.user_data.should == './cloud_init/init.txt'
         end
       end
 
@@ -349,6 +351,7 @@ describe KnifeNitrous::Server do
             cloud_instance.availability_zone.should == "ap-southeast-1a"
             cloud_instance.key_name.should == "ap-southeast-1-keypair"
             cloud_instance.groups.should == ["example-security-group"]
+            cloud_instance.user_data.should == './cloud_init/init.txt'
           end
         end
 
@@ -365,6 +368,7 @@ describe KnifeNitrous::Server do
             cloud_instance.availability_zone.should == "ap-southeast-1a"
             cloud_instance.key_name.should == "ap-southeast-1-keypair"
             cloud_instance.groups.should == ["example-security-group"]
+            cloud_instance.user_data.should == './cloud_init/init.txt'
           end
         end
       end
