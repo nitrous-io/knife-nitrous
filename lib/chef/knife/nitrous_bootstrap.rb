@@ -1,6 +1,7 @@
 module KnifeNitrous
   class NitrousBootstrap < Chef::Knife
 
+    require 'chef/knife/nitrous_base'
     include Chef::Knife::NitrousBase
 
     banner    'knife nitrous bootstrap (options)'
