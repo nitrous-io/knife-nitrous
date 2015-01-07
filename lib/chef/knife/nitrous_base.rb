@@ -1,5 +1,5 @@
 require 'app_conf'
-require 'hipchat'
+require 'slack-notifier'
 
 class Chef
   class Knife
@@ -163,19 +163,19 @@ class Chef
       end
 
       def announce(message, level: :info)
-        term_color, hipchat_color = case level
+        term_color = case level
         when :error, :warn
-          [:red, 'red']
+          :red
         when :success
-          [:green, 'green']
+          :green
         when :info
-          [:magenta, 'yellow']
+          :magenta
         else
-          [:magenta, 'yellow']
+          :magenta
         end
 
         puts "===> #{ui.color(message, term_color)}"
-        if hipchat_enabled?
+        if slack_enabled?
           token = case level
           when :error, :warn
             '(ಠ_ಠ)'
@@ -184,20 +184,16 @@ class Chef
           else
             '(⌐■_■)'
           end
-          hipchat_room.send('knife-nitrous', "#{message} #{token}", color: hipchat_color, message_format: 'text')
+          slack_client.ping("#{message} #{token}")
         end
       end
 
-      def hipchat_enabled?
-        nitrous_config.hipchat && nitrous_config.hipchat[:enabled]
+      def slack_enabled?
+        nitrous_config.slack && nitrous_config.slack[:enabled]
       end
 
-      def hipchat_client
-        @hipchat_client ||= HipChat::Client.new(nitrous_config.hipchat[:key], api_version: 'v1')
-      end
-
-      def hipchat_room
-        @hipchat_room ||= hipchat_client[nitrous_config.hipchat[:room]]
+      def slack_client
+        @slack_client ||= Slack::Notifier.new(nitrous_config.slack[:webhook])
       end
 
       # get correct identity file. Here are where we will look for the new file
