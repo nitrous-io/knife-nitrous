@@ -31,6 +31,11 @@ module KnifeNitrous
       long: '--override-runlist',
       description: 'Replace current run list with specified items'
 
+    option :json_attribs,
+      :short => "-j JSON_ATTRIBS",
+      :long => "--json-attributes JSON_ATTRIBS",
+      :description => "Load attributes from a JSON file"
+
     option :solo,
       long: '--[no-]solo',
       description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
@@ -65,6 +70,11 @@ module KnifeNitrous
         solo_conf[:override_runlist] = config[:override_runlist]
       end
 
+      if config[:json_attribs].present?
+        override_json = File.read(config[:json_attribs])
+        override_hash = JSON.parse(override_json)
+      end
+
       announce("#{ENV['USER']} is provisioning: #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each_with_index do |s, i|
         puts "===> " + ui.color("Server ##{i+1} of #{servers_to_provision.count}: #{s.hostname}", :green)
@@ -72,6 +82,10 @@ module KnifeNitrous
 
         if s.cloud_state == 'running'
           s.setup_volumes
+          
+          if override_hash.is_a?(Hash)
+            s.attributes = s.attributes.deep_merge(override_hash)
+          end
 
           chef_attributes_loader_for_node(s, timestamp).run
           chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
