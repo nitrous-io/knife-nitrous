@@ -33,4 +33,6 @@ require "chef/knife/nitrous_base"
 require "chef/knife/nitrous_create"
 require "chef/knife/nitrous_provision"
 require "chef/knife/nitrous_bootstrap"
+require "chef/knife/nitrous_digitalocean_base"
+require "chef/knife/nitrous_digitalocean_create"
 
