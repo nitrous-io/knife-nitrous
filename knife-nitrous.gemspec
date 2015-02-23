@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency  "fog",            "~> 1.18.0"
   gem.add_dependency  "domainatrix",    "~> 0.0.11"
-  gem.add_dependency  "activesupport",  "~> 3.2.8"
+  gem.add_dependency  "activesupport",  "~> 4.1.6"
   gem.add_dependency  "ipaddress",      "~> 0.8.0"
 
   gem.add_dependency  "knife-solo",           "~> 0.4.0"
