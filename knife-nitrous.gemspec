@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency  "knife-solo",           "~> 0.4.0"
   gem.add_dependency  "knife-solo_data_bag",  "~> 0.4.0"
+  gem.add_dependency  "droplet_kit",          "~> 1.1.3"
   gem.add_dependency  "slack-notifier",       "~> 1.0.0"
   gem.add_dependency  "app_conf",             "~> 0.4.2"
 
