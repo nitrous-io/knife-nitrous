@@ -1,49 +1,29 @@
-# Copied from knife-digital_ocean
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+require 'app_conf'
+require 'slack-notifier'
+
 class Chef
   class Knife
     module NitrousDigitalOceanBase
-      def self.load_deps
-        require 'droplet_kit'
-        require 'json'
-      end
-
       def self.included(includer)
         includer.class_eval do
-          category 'digital_ocean'
-
-          deps { Chef::Knife::NitrousDigitalOceanBase.load_deps }
-
-          option :digital_ocean_access_token,
-                 short: '-A ACCESS_TOKEN',
-                 long: '--digital_ocean_access_token ACCESS_TOKEN',
-                 description: 'Your DigitalOcean ACCESS_TOKEN',
-                 proc: proc { |access_token| Chef::Config[:knife][:digital_ocean_access_token] = access_token }
+          deps do
+            require 'droplet_kit'
+            require 'yaml'
+            require 'servers/droplet'
+          end
         end
       end
 
       def client
-        DropletKit::Client.new(access_token: Chef::Config[:knife][:digital_ocean_access_token])
+        DropletKit::Client.new(access_token: Chef::Config[:knife][:digitalocean_access_token])
       end
 
-      def validate!(keys = [:digital_ocean_access_token])
+      def validate!(keys = [:digitalocean_access_token])
         errors = []
 
         keys.each do |k|
           if locate_config_value(k).nil?
-            errors << "You did not provide a valid '#{k}' value. Please set knife[:#{k}] in your knife.rb or pass as an option."
+            errors << "You did not provide a valid '#{k}' value. Please set knife[:#{k}] in your knife.rb."
           end
         end
 
@@ -70,6 +50,44 @@ class Chef
           end
         end
         ui.info 'OK'
+      end
+
+      def parse(config_file)
+        return nil unless File.exists? config_file
+
+        parsed_yaml = nil
+
+        begin
+          parsed_yaml = YAML.load(File.read(config_file))
+        rescue Psych::SyntaxError
+          p "Invalid YAML. Check your #{config_file} file."
+          return nil
+        end
+
+        if parsed_yaml["servers_common"]
+          server_config = deep_merge parsed_yaml["servers_common"], server_config
+        end
+
+        KnifeNitrous::Droplet.new(name: server_config['hostname'],
+                                  size: server_config['do_size'],
+                                  region: server_config['do_region'],
+                                  image:  server_config['do_image'],
+                                  attributes: server_config['attributes'],
+                                  run_list: parsed_yaml['run_list'])
+      end
+
+      def nitrous_config
+        return @nitrous_config if @nitrous_config
+
+        @nitrous_config = AppConf.new
+        load_paths = [File.expand_path('~/.chef/nitrous.yml'), File.expand_path('./nitrous.yml')]
+        load_paths.each do |load_path|
+          if File.exists?(load_path)
+            @nitrous_config.load(load_path)
+          end
+        end
+
+        @nitrous_config
       end
 
       def announce(message, level: :info)
@@ -105,6 +123,21 @@ class Chef
       def slack_client
         @slack_client ||= Slack::Notifier.new(nitrous_config.slack[:webhook])
       end
+
+      def bootstrap_for_node(droplet, ip_address)
+        bootstrap = bootstrap_class.new
+        bootstrap.name_args = [ip_address]
+        bootstrap.config[:chef_node_name] = droplet.name
+        bootstrap.config[:ssh_port] = Chef::Config[:knife][:ssh_port] || droplet.ssh_port
+        bootstrap.config[:use_sudo] = true unless droplet.ssh_user == 'root'
+        bootstrap.config[:first_boot_attributes] = droplet.attributes || {}
+        bootstrap
+      end
+
+      def bootstrap_class
+        solo_bootstrap? ? Chef::Knife::SoloBootstrap : Chef::Knife::Bootstrap
+      end
+
     end
   end
 end
