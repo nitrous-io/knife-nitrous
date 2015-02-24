@@ -14,11 +14,12 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency  "fog",            "~> 1.18.0"
   gem.add_dependency  "domainatrix",    "~> 0.0.11"
-  gem.add_dependency  "activesupport",  "~> 3.2.8"
+  gem.add_dependency  "activesupport",  "~> 4.1.6"
   gem.add_dependency  "ipaddress",      "~> 0.8.0"
 
   gem.add_dependency  "knife-solo",           "~> 0.4.0"
   gem.add_dependency  "knife-solo_data_bag",  "~> 0.4.0"
+  gem.add_dependency  "droplet_kit",          "~> 1.1.3"
   gem.add_dependency  "slack-notifier",       "~> 1.0.0"
   gem.add_dependency  "app_conf",             "~> 0.4.2"
 
