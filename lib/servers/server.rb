@@ -5,7 +5,7 @@ module KnifeNitrous
     attr_accessor :hostname, :type, :region, :environment,
                   :size, :ami, :block_devices, :attributes,
                   :run_list, :availability_zone, :security_groups,
-                  :iam_role, :user_data
+                  :iam_role, :user_data, :subnet_id
 
     attr_reader   :ssh_port, :ip
 
@@ -203,6 +203,10 @@ module KnifeNitrous
           Purpose: self.type
         }
       }
+
+      if self.subnet_id != ""
+        server_def[:subnet_id] = self.subnet_id
+      end
 
       if self.block_devices && !self.block_devices.to_a.empty?
         server_def[:block_device_mapping] = self.block_devices.to_hash

@@ -68,6 +68,7 @@ module KnifeNitrous
                                           iam_role: parsed_yaml['iam_role'],
                                           security_groups: security_groups.keys,
                                           run_list: parsed_yaml['run_list'],
+                                          subnet_id: parsed_yaml['subnet_id'],
                                           availability_zone: server_config['availability_zone'])
 
         server.user_data = user_data unless user_data.nil?
