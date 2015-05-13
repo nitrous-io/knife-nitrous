@@ -1,4 +1,23 @@
 module KnifeNitrous
+  # Server that has been created without help from knife-nitrous. We know only
+  # take care of bootstraping/provisioning these servers
+  class PlainServer
+    attr_accessor :hostname, :region, :attributes, :run_list, :type
+    attr_reader   :ssh_port
+
+    SSH_PORT = 65100
+
+    def initialize(opts = {})
+      opts.each { |k,v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
+      @run_list = [] if @run_list.nil?
+      @ssh_port = SSH_PORT
+    end
+
+    def aws_dns_name
+      self.hostname
+    end
+  end
+
   class Server
     include KnifeNitrous::AWS
 

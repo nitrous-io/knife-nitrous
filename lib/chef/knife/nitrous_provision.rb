@@ -41,6 +41,12 @@ module KnifeNitrous
       description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
       proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
+    option :setup,
+      long: "--[no-]setup",
+      description: "Perform additional infrastructure setup using EC2 API",
+      boolean: true,
+      default: true
+
     attr_reader :name, :server_collection
 
     def run
@@ -54,8 +60,13 @@ module KnifeNitrous
         exit 1
       end
 
-      @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
-      servers_to_provision = @server_collection.to_a
+      if config[:setup]
+        @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
+        servers_to_provision = @server_collection.to_a
+      else
+        @server_collection = KnifeNitrous::PlainServerCollection.parse(config[:yaml_file])
+        servers_to_provision = @server_collection.to_a
+      end
 
       if config[:region].present?
         servers_to_provision.select! { |s| config[:region].include?(s.region) }
@@ -63,7 +74,9 @@ module KnifeNitrous
         servers_to_provision.select! { |s| config[:hostname] == s.hostname }
       end
 
-      self.provision_security_group! servers_to_provision, server_collection.security_group_hash
+      if config[:setup]
+        self.provision_security_group! servers_to_provision, server_collection.security_group_hash
+      end
 
       solo_conf = {}
       if config[:override_runlist].present?
@@ -79,32 +92,38 @@ module KnifeNitrous
       servers_to_provision.each_with_index do |s, i|
         puts "===> " + ui.color("Server ##{i+1} of #{servers_to_provision.count}: #{s.hostname}", :green)
         timestamp = Time.now.to_i
+        if override_hash.is_a?(Hash)
+          s.attributes = s.attributes.deep_merge(override_hash)
+        end
+        run_list = config[:override_runlist].present? ? "[#{config[:override_runlist]}] (overridden)" : s.run_list
 
-        if s.cloud_state == 'running'
-          s.setup_volumes
-          
-          if override_hash.is_a?(Hash)
-            s.attributes = s.attributes.deep_merge(override_hash)
+        if config[:setup]
+          if s.cloud_state == 'running'
+            s.setup_volumes
+            chef_attributes_loader_for_node(s, timestamp).run
+            chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
+            begin
+              chef_runner.run
+            rescue => e
+              announce("Failed provisioning on #{s.hostname}. Run list: #{run_list}", level: :error)
+              raise e
+            end
+            announce("Completed provisioning on #{s.hostname}. Run list: #{run_list}", level: :success)
+          else
+            announce("Skipped provisioning on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
           end
-
+        else
           chef_attributes_loader_for_node(s, timestamp).run
           chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
-
-          run_list = config[:override_runlist].present? ? "[#{config[:override_runlist]}] (overridden)" : s.run_list
-
           begin
             chef_runner.run
           rescue => e
             announce("Failed provisioning on #{s.hostname}. Run list: #{run_list}", level: :error)
             raise e
           end
-
           announce("Completed provisioning on #{s.hostname}. Run list: #{run_list}", level: :success)
-        else
-          announce("Skipped provisioning on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end
-
   end
 end
