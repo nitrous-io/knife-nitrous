@@ -32,6 +32,12 @@ module KnifeNitrous
       description: 'Do a chef-solo bootstrap on the droplet using knife-solo',
       proc: Proc.new { |s| Chef::Config[:knife][:solo] = s }
 
+    option :setup,
+      long: "--[no-]setup",
+      description: "Perform additional infrastructure setup using EC2 API",
+      boolean: true,
+      default: true
+
     attr_reader :name, :server_collection
 
     def run
@@ -45,8 +51,13 @@ module KnifeNitrous
         exit 1
       end
 
-      @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
-      servers_to_provision = @server_collection.to_a
+      if config[:setup]
+        @server_collection = KnifeNitrous::ServerCollection.parse(config[:yaml_file], config[:sg_directory])
+        servers_to_provision = @server_collection.to_a
+      else
+        @server_collection = KnifeNitrous::PlainServerCollection.parse(config[:yaml_file])
+        servers_to_provision = @server_collection.to_a
+      end
 
       if config[:region].present?
         servers_to_provision.select! { |s| config[:region].include?(s.region) }
@@ -54,18 +65,26 @@ module KnifeNitrous
         servers_to_provision.select! { |s| config[:hostname] == s.hostname }
       end
 
-      self.provision_security_group! servers_to_provision, server_collection.security_group_hash
+      if config[:setup]
+        self.provision_security_group! servers_to_provision, server_collection.security_group_hash
+      end
 
       announce("#{ENV['USER']} is bootstrapping #{servers_to_provision.count} server(s): #{servers_to_provision.map(&:hostname).join(',')}")
       servers_to_provision.each do |s|
-        if s.cloud_state == 'running'
-          s.setup_volumes
+        if config[:setup]
+          if s.cloud_state == 'running'
+            s.setup_volumes
 
+            announce("Bootstrap started on #{s.hostname}")
+            bootstrap_chef_for_node(s).run
+            announce("Bootstrap completed on #{s.hostname}", level: :success)
+          else
+            announce("Bootstrap skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
+          end
+        else
           announce("Bootstrap started on #{s.hostname}")
           bootstrap_chef_for_node(s).run
           announce("Bootstrap completed on #{s.hostname}", level: :success)
-        else
-          announce("Bootstrap skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
         end
       end
     end
