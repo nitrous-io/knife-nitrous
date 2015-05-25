@@ -108,10 +108,14 @@ module KnifeNitrous
     # volumes, only tried to setup new volumes with correct size by comparing
     # the attached volumes with block_devices specified in config
     def setup_volumes
-      current_devices = cloud_instance.volumes.all.map(&:device)
+      attached_volumes = cloud_instance.volumes.all(
+        'attachment.instance-id' => cloud_instance.id,
+        'attachment.status' => 'attached'
+      )
+      attached_devices = attached_volumes.map(&:device)
 
       new_volumes = block_devices.to_a.select do |block|
-        !current_devices.include? block.name
+        !attached_devices.include? block.name
       end
 
       puts "Provisioning New Volumes" unless new_volumes.empty?
