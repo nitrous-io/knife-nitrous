@@ -38,6 +38,10 @@ module KnifeNitrous
       boolean: true,
       default: true
 
+    option :ssh_port,
+      short: "-p SSH_PORT",
+      description: "speicify a custom ssh port"
+
     attr_reader :name, :server_collection
 
     def run
@@ -76,14 +80,14 @@ module KnifeNitrous
             s.setup_volumes
 
             announce("Bootstrap started on #{s.hostname}")
-            bootstrap_chef_for_node(s).run
+            bootstrap_chef_for_node(s, config[:ssh_port]).run
             announce("Bootstrap completed on #{s.hostname}", level: :success)
           else
             announce("Bootstrap skipped on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
           end
         else
           announce("Bootstrap started on #{s.hostname}")
-          bootstrap_chef_for_node(s).run
+          bootstrap_chef_for_node(s, config[:ssh_port]).run
           announce("Bootstrap completed on #{s.hostname}", level: :success)
         end
       end

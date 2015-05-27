@@ -47,6 +47,10 @@ module KnifeNitrous
       boolean: true,
       default: true
 
+    option :ssh_port,
+      short: "-p SSH_PORT",
+      description: "speicify a custom ssh port"
+
     attr_reader :name, :server_collection
 
     def run
@@ -100,8 +104,8 @@ module KnifeNitrous
         if config[:setup]
           if s.cloud_state == 'running'
             s.setup_volumes
-            chef_attributes_loader_for_node(s, timestamp).run
-            chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
+            chef_attributes_loader_for_node(s, timestamp, config[:ssh_port]).run
+            chef_runner = chef_runner_for_node(s, timestamp, solo_conf, config[:ssh_port])
             begin
               chef_runner.run
             rescue => e
@@ -113,8 +117,8 @@ module KnifeNitrous
             announce("Skipped provisioning on #{s.hostname}, state: #{s.cloud_state}", level: :warn)
           end
         else
-          chef_attributes_loader_for_node(s, timestamp).run
-          chef_runner = chef_runner_for_node(s, timestamp, solo_conf)
+          chef_attributes_loader_for_node(s, timestamp, config[:ssh_port]).run
+          chef_runner = chef_runner_for_node(s, timestamp, solo_conf, config[:ssh_port])
           begin
             chef_runner.run
           rescue => e

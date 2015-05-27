@@ -45,12 +45,13 @@ class Chef
         end
       end
 
-      def bootstrap_chef_for_node(server)
+      def bootstrap_chef_for_node(server, ssh_port)
+        ssh_port = KnifeNitrous::Server::SSH_PORT unless ssh_port
         bootstrap = bootstrap_class.new
         bootstrap.name_args = [server.aws_dns_name]
         bootstrap.config[:run_list] = server.run_list
         bootstrap.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
-        bootstrap.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
+        bootstrap.config[:ssh_port] = ssh_port
         bootstrap.config[:identity_file] = identity_file(server.region)
 
         bootstrap.config[:chef_node_name] = server.hostname
@@ -71,7 +72,8 @@ class Chef
         bootstrap
       end
 
-      def chef_runner_for_node(server, timestamp, solo_conf={})
+      def chef_runner_for_node(server, timestamp, solo_conf={}, ssh_port)
+        ssh_port = KnifeNitrous::Server::SSH_PORT unless ssh_port
         ssh = solo_bootstrap? ? Chef::Knife::SoloCook.new : Chef::Knife::Ssh.new
         ssh.ui = ui
 
@@ -94,7 +96,7 @@ class Chef
         end
 
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
-        ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
+        ssh.config[:ssh_port] = ssh_port
         ssh.config[:identity_file] = identity_file(server.region)
         ssh.config[:manual] = true
         ssh.config[:on_error] = :raise
@@ -102,7 +104,8 @@ class Chef
         ssh
       end
 
-      def chef_attributes_loader_for_node(server, timestamp)
+      def chef_attributes_loader_for_node(server, timestamp, ssh_port)
+        ssh_port = KnifeNitrous::Server::SSH_PORT unless ssh_port
         ssh = Chef::Knife::Ssh.new
         ssh.ui = ui
 
@@ -113,7 +116,7 @@ class Chef
 
         ssh.name_args = [ server.hostname, command ]
         ssh.config[:ssh_user] = KnifeNitrous::Server::SSH_USER
-        ssh.config[:ssh_port] = KnifeNitrous::Server::SSH_PORT
+        ssh.config[:ssh_port] = ssh_port
         ssh.config[:identity_file] = identity_file(server.region)
         ssh.config[:manual] = true
         ssh.config[:on_error] = :raise
